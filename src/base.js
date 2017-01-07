@@ -117,10 +117,6 @@ export class BaseController {
     };
   }
 
-  authorize(user, item, level) { // eslint-disable-line no-unused-vars
-    return Bluebird.resolve(false);
-  }
-
   createHandler(method, options) {
     const handler = this[method](options);
     return (request, reply) => {
@@ -186,55 +182,22 @@ export class BaseController {
     };
   }
 
-  approveHandler(methodName, options = {}) {
-    return {
-      method: (request, reply) => {
-        return Bluebird.resolve()
-        .then(() => {
-          const user = request.auth.credentials.user;
-          if (user.superuser && this.Model.allowSuperuserOverride(methodName)) {
-            return true;
-          } else {
-            const actorProfile = this.plump.find('profiles', user.profile_id);
-            if (request.params.itemId) {
-              return request.pre.item
-              .approve(actorProfile, methodName, {
-                payload: request.payload,
-                field: options.field,
-              });
-            } else {
-              return this.Model.approve(actorProfile, methodName, {
-                payload: request.payload,
-                field: options.field,
-              });
-            }
-          }
-        })
-        .then((result) => {
-          if (result) {
-            reply(result);
-          } else {
-            reply(Boom.forbidden());
-          }
-        })
-        .catch((err) => {
-          if (err.isBoom) {
-            reply(err);
-          } else {
-            console.log(err.stack);
-            reply(Boom.badImplementation(err));
-          }
-        });
-      },
-      assign: 'approve',
-    };
-  }
-
   route(method, opts) {
     if (opts.plural) {
       return this.routeMany(method, opts);
     } else {
       return this.routeOne(method, opts);
+    }
+  }
+
+
+  // override approveHandler with whatever per-route
+  // logic you want - reply with Boom.notAuthorized()
+  // or any other value on non-approved status
+  approveHandler(method, opts) {
+    return {
+      method: (request, reply) => reply(true),
+      assign: 'approve'
     }
   }
 
