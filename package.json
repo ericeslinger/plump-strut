@@ -4,7 +4,7 @@
   "description": "Adapter for creating CRUD route handlers for plump object in hapi.js",
   "main": "dist/base.js",
   "scripts": {
-    "test": "gulp clean && gulp build && gulp test"
+    "test": "mocha --compilers js:babel-core/register test/*.spec.js --require test/helper.js"
   },
   "repository": {
     "type": "git",
