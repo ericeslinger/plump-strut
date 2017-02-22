@@ -4,7 +4,7 @@
   "description": "Adapter for creating CRUD route handlers for plump object in hapi.js",
   "main": "dist/base.js",
   "scripts": {
-    "test": "gulp test"
+    "test": "mocha --compilers js:babel-core/register test/*.spec.js --require test/helper.js"
   },
   "repository": {
     "type": "git",
@@ -36,10 +36,13 @@
     "gulp-sourcemaps": "^1.9.1",
     "mocha": "^3.2.0"
   },
-  "dependencies": {
-    "bluebird": "^3.4.7",
+  "peerDependencies": {
     "boom": "^4.2.0",
     "joi": "^10.1.0",
-    "plump": "^0.1.0"
+    "plump": "ericeslinger/plump#master",
+    "hapi": "^16.0.0"
+  },
+  "dependencies": {
+    "bluebird": "^3.4.7"
   }
 }

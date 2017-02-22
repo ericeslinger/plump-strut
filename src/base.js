@@ -1,13 +1,13 @@
 import Boom from 'boom';
 import Joi from 'joi';
-import { baseRoutes } from './baseRoutes';
+import { createRoutes } from './baseRoutes';
 import Bluebird from 'bluebird';
 import mergeOptions from 'merge-options';
 
 function plugin(server, _, next) {
   server.route(
     this.constructor.routes
-    .map((method) => this.route(method, baseRoutes[method]))
+    .map((method) => this.route(method, this.routes[method]))
     .reduce((curr, val) => curr.concat(val), []) // routeMany returns an array
   );
   server.route(this.extraRoutes());
@@ -19,6 +19,9 @@ export class BaseController {
     this.plump = plump;
     this.Model = Model;
     this.options = Object.assign({}, { sideloads: [] }, options);
+
+    this.routes = createRoutes(this.options.routes);
+
     this.plugin = plugin.bind(this);
     this.plugin.attributes = Object.assign({}, {
       version: '1.0.0',
@@ -134,17 +137,17 @@ export class BaseController {
     try {
       if (field) {
         const validate = {
-          [this.Model.$fields[field].relationship.$sides[field].other.field]: Joi.number(),
+          [this.Model.$schema[field].relationship.$sides[field].other.field]: Joi.number(),
         };
-        if (this.Model.$fields[field].relationship.$extras) {
-          Object.keys(this.Model.$fields[field].relationship.$extras).forEach((key) => {
-            validate[key] = Joi[this.Model.$fields[field].relationship.$extras[key].type]();
+        if (this.Model.$schema[field].relationship.$extras) {
+          Object.keys(this.Model.$schema[field].relationship.$extras).forEach((key) => {
+            validate[key] = Joi[this.Model.$schema[field].relationship.$extras[key].type]();
           });
         }
         return validate;
       } else {
         const retVal = {};
-        const fields = this.Model.$fields;
+        const fields = this.Model.$schema;
         Object.keys(fields).forEach((key) => {
           if ((!fields[key].readOnly) && (fields[key].type !== 'hasMany')) {
             retVal[key] = Joi[fields[key].type]();
@@ -202,7 +205,7 @@ export class BaseController {
   }
 
   routeMany(method, opts) {
-    return Object.keys(this.Model.$fields).filter((f) => this.Model.$fields[f].type === 'hasMany')
+    return Object.keys(this.Model.$schema).filter((f) => this.Model.$schema[f].type === 'hasMany')
     .map((field) => {
       const genericOpts = mergeOptions(
         {},
