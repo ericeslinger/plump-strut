@@ -1,8 +1,9 @@
 /* eslint-env node, mocha*/
 /* eslint no-shadow: 0 */
 
-import { TestType, Plump, MemoryStore } from 'plump';
-import { BaseController } from '../base';
+import { Plump, MemoryStore } from 'plump';
+import { BaseController } from '../src/base';
+import { TestType } from 'plump/test/testType';
 
 import chai from 'chai';
 import Hapi from 'hapi';

@@ -137,17 +137,17 @@ export class BaseController {
     try {
       if (field) {
         const validate = {
-          [this.Model.$fields[field].relationship.$sides[field].other.field]: Joi.number(),
+          [this.Model.$schema[field].relationship.$sides[field].other.field]: Joi.number(),
         };
-        if (this.Model.$fields[field].relationship.$extras) {
-          Object.keys(this.Model.$fields[field].relationship.$extras).forEach((key) => {
-            validate[key] = Joi[this.Model.$fields[field].relationship.$extras[key].type]();
+        if (this.Model.$schema[field].relationship.$extras) {
+          Object.keys(this.Model.$schema[field].relationship.$extras).forEach((key) => {
+            validate[key] = Joi[this.Model.$schema[field].relationship.$extras[key].type]();
           });
         }
         return validate;
       } else {
         const retVal = {};
-        const fields = this.Model.$fields;
+        const fields = this.Model.$schema;
         Object.keys(fields).forEach((key) => {
           if ((!fields[key].readOnly) && (fields[key].type !== 'hasMany')) {
             retVal[key] = Joi[fields[key].type]();
@@ -205,7 +205,7 @@ export class BaseController {
   }
 
   routeMany(method, opts) {
-    return Object.keys(this.Model.$fields).filter((f) => this.Model.$fields[f].type === 'hasMany')
+    return Object.keys(this.Model.$schema).filter((f) => this.Model.$schema[f].type === 'hasMany')
     .map((field) => {
       const genericOpts = mergeOptions(
         {},
