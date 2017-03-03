@@ -36,7 +36,7 @@ describe('Base Plump Routes', () => {
       payload: JSON.stringify({ name: 'potato' }),
     })
     .then((response) => {
-      return expect(JSON.parse(response.payload)).to.have.property('name', 'potato');
+      return expect(JSON.parse(response.payload)).to.have.deep.property('attributes.name', 'potato');
     });
   });
 
@@ -59,7 +59,7 @@ describe('Base Plump Routes', () => {
         payload: JSON.stringify({ name: 'grotato' }),
       });
     })
-    .then(() => expect(one.$get()).to.eventually.have.property('name', 'grotato'));
+    .then(() => expect(one.$get()).to.eventually.have.deep.property('attributes.name', 'grotato'));
   });
 
   it('D', () => {

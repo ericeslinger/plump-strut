@@ -4,11 +4,13 @@ import { createRoutes } from './baseRoutes';
 import Bluebird from 'bluebird';
 import mergeOptions from 'merge-options';
 
+const baseRoutes = createRoutes();
+
 function plugin(server, _, next) {
   server.route(
     this.constructor.routes
-    .map((method) => this.route(method, this.routes[method]))
-    .reduce((curr, val) => curr.concat(val), []) // routeMany returns an array
+    .map((method) => this.route(method, baseRoutes[method]))
+    .reduce((acc, curr) => acc.concat(curr), []) // routeMany returns an array
   );
   server.route(this.extraRoutes());
   next();
@@ -19,9 +21,6 @@ export class BaseController {
     this.plump = plump;
     this.Model = Model;
     this.options = Object.assign({}, { sideloads: [] }, options);
-
-    this.routes = createRoutes(this.options.routes);
-
     this.plugin = plugin.bind(this);
     this.plugin.attributes = Object.assign({}, {
       version: '1.0.0',
@@ -56,7 +55,7 @@ export class BaseController {
 
   update() {
     return (request) => {
-      return request.pre.item.$set(request.payload)
+      return request.pre.item.$set(request.payload).$save()
       .then((v) => {
         return v.$get();
       });
@@ -81,7 +80,7 @@ export class BaseController {
 
   addChild({ field }) {
     return (request) => {
-      return request.pre.item.$add(field, request.payload);
+      return request.pre.item.$add(field, request.payload).$save();
     };
   }
 
@@ -96,13 +95,13 @@ export class BaseController {
 
   removeChild({ field }) {
     return (request) => {
-      return request.pre.item.$remove(field, request.params.childId);
+      return request.pre.item.$remove(field, request.params.childId).$save();
     };
   }
 
   modifyChild({ field }) {
     return (request) => {
-      return request.pre.item.$modifyRelationship(field, request.params.childId, request.payload);
+      return request.pre.item.$modifyRelationship(field, request.params.childId, request.payload).$save();
     };
   }
 
@@ -136,23 +135,24 @@ export class BaseController {
   createJoiValidator(field) {
     try {
       if (field) {
+        const relSchema = this.Model.$schema.relationships[field].type;
         const validate = {
-          [this.Model.$schema[field].relationship.$sides[field].other.field]: Joi.number(),
+          [relSchema.$sides[field].other.field]: Joi.number(),
         };
-        if (this.Model.$schema[field].relationship.$extras) {
-          Object.keys(this.Model.$schema[field].relationship.$extras).forEach((key) => {
-            validate[key] = Joi[this.Model.$schema[field].relationship.$extras[key].type]();
-          });
+        if (relSchema.$extras) {
+          for (const extra in relSchema.$extras) { // eslint-disable-line guard-for-in
+            validate[extra] = Joi[relSchema.$extras[extra].type]();
+          }
         }
         return validate;
       } else {
         const retVal = {};
-        const fields = this.Model.$schema;
-        Object.keys(fields).forEach((key) => {
-          if ((!fields[key].readOnly) && (fields[key].type !== 'hasMany')) {
-            retVal[key] = Joi[fields[key].type]();
+        const attributes = this.Model.$schema.attributes;
+        for (const attr in attributes) {
+          if (!attributes[attr].readOnly) {
+            retVal[attr] = Joi[attributes[attr].type]();
           }
-        });
+        }
         return retVal;
       }
     } catch (err) {
@@ -197,16 +197,15 @@ export class BaseController {
   // override approveHandler with whatever per-route
   // logic you want - reply with Boom.notAuthorized()
   // or any other value on non-approved status
-  approveHandler(method, opts) {
+  approveHandler(method, opts) { // eslint-disable-line no-unused-vars
     return {
       method: (request, reply) => reply(true),
-      assign: 'approve'
-    }
+      assign: 'approve',
+    };
   }
 
   routeMany(method, opts) {
-    return Object.keys(this.Model.$schema).filter((f) => this.Model.$schema[f].type === 'hasMany')
-    .map((field) => {
+    return Object.keys(this.Model.$schema.relationships).map(field => {
       const genericOpts = mergeOptions(
         {},
         opts,

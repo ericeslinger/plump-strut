@@ -39,7 +39,7 @@
   "peerDependencies": {
     "boom": "^4.2.0",
     "joi": "^10.1.0",
-    "plump": "ericeslinger/plump#master",
+    "plump": "mrpinsky/plump",
     "hapi": "^16.0.0"
   },
   "dependencies": {
