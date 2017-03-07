@@ -10,7 +10,7 @@ function plugin(server, _, next) {
   server.route(
     this.constructor.routes
     .map((method) => this.route(method, baseRoutes[method]))
-    .reduce((acc, curr) => acc.concat(curr), []) // routeMany returns an array
+    .reduce((acc, curr) => acc.concat(curr), []) // routeRelationship returns an array
   );
   server.route(this.extraRoutes());
   next();
@@ -137,7 +137,7 @@ export class BaseController {
       if (field) {
         const relSchema = this.Model.$schema.relationships[field].type;
         const validate = {
-          [relSchema.$sides[field].other.field]: Joi.number(),
+          [relSchema.$sides[field].otherName]: Joi.number(),
         };
         if (relSchema.$extras) {
           for (const extra in relSchema.$extras) { // eslint-disable-line guard-for-in
@@ -187,9 +187,9 @@ export class BaseController {
 
   route(method, opts) {
     if (opts.plural) {
-      return this.routeMany(method, opts);
+      return this.routeRelationship(method, opts);
     } else {
-      return this.routeOne(method, opts);
+      return this.routeAttributes(method, opts);
     }
   }
 
@@ -204,7 +204,7 @@ export class BaseController {
     };
   }
 
-  routeMany(method, opts) {
+  routeRelationship(method, opts) {
     return Object.keys(this.Model.$schema.relationships).map(field => {
       const genericOpts = mergeOptions(
         {},
@@ -219,11 +219,11 @@ export class BaseController {
         genericOpts.validate.payload = this.createJoiValidator(field);
       }
       genericOpts.plural = false;
-      return this.routeOne(method, genericOpts);
+      return this.routeAttributes(method, genericOpts);
     });
   }
 
-  routeOne(method, opts) {
+  routeAttributes(method, opts) {
     /*
     opts: {
       pre: [ANY PREHANDLERs]
@@ -274,7 +274,6 @@ export class BaseController {
 BaseController.routes = [
   'read',
   'query',
-  'schema',
   'listChildren',
   'addChild',
   'removeChild',
