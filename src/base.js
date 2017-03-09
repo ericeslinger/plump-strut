@@ -158,7 +158,8 @@ export class BaseController {
 
             for (const extra in extras) { // eslint-disable-line guard-for-in
               const extraType = extras[extra].type;
-              itemSchema[extra] = Joi[extraType]();
+              itemSchema.meta = itemSchema.meta || {};
+              itemSchema.meta[extra] = Joi[extraType]();
             }
           }
           retVal.relationships[relName] = Joi.array()
