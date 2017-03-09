@@ -161,7 +161,11 @@ export class BaseController {
               itemSchema[extra] = Joi[extraType]();
             }
           }
-          retVal.relationships[relName] = Joi.array().items(itemSchema);
+          retVal.relationships[relName] = Joi.array()
+            .items({
+              op: Joi.string().valid('add', 'modify', 'remove'),
+              data: itemSchema,
+            });
         });
         return retVal;
       }
