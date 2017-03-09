@@ -134,25 +134,49 @@ export class BaseController {
 
   createJoiValidator(field) {
     try {
+      const schema = this.Model.$schema;
       if (field) {
-        const relSchema = this.Model.$schema.relationships[field].type;
-        const validate = {
-          [relSchema.$sides[field].otherName]: Joi.number(),
-        };
-        if (relSchema.$extras) {
-          for (const extra in relSchema.$extras) { // eslint-disable-line guard-for-in
-            validate[extra] = Joi[relSchema.$extras[extra].type]();
+        if (field in schema.attributes) {
+          return { [field]: Joi[schema.attributes[field].type]() };
+        } else if (field in schema.relationships) {
+          const retVal = { id: Joi.number() };
+
+          if (schema.relationships[field].type.$extras) {
+            const extras = schema.relationships[field].type.$extras;
+
+            Object.keys(extras).forEach(extra => {
+              const extraType = extras[extra].type;
+              retVal[extra] = Joi[extraType]();
+            });
           }
+          return retVal;
+        } else {
+          return {};
         }
-        return validate;
       } else {
-        const retVal = {};
-        const attributes = this.Model.$schema.attributes;
-        for (const attr in attributes) {
-          if (!attributes[attr].readOnly) {
-            retVal[attr] = Joi[attributes[attr].type]();
+        const retVal = {
+          type: Joi.string(),
+          id: Joi.number(),
+          attributes: {},
+          relationships: {},
+        };
+
+        Object.keys(schema.attributes).forEach(attr => {
+          retVal.attributes[attr] = Joi[schema.attributes[attr].type]();
+        });
+
+        Object.keys(schema.relationships).forEach(relName => {
+          retVal.relationships[relName] = { id: Joi.number() };
+
+          if (schema.relationships[relName].type.$extras) {
+            const extras = schema.relationships[relName].type.$extras;
+
+            for (const extra in extras) { // eslint-disable-line guard-for-in
+              const extraType = extras[extra].type;
+              retVal.relationships[relName][extra] = Joi[extraType]();
+            }
           }
-        }
+        });
         return retVal;
       }
     } catch (err) {
@@ -187,7 +211,7 @@ export class BaseController {
 
   route(method, opts) {
     if (opts.plural) {
-      return this.routeRelationship(method, opts);
+      return this.routeRelationships(method, opts);
     } else {
       return this.routeAttributes(method, opts);
     }
@@ -204,14 +228,14 @@ export class BaseController {
     };
   }
 
-  routeRelationship(method, opts) {
+  routeRelationships(method, opts) {
     return Object.keys(this.Model.$schema.relationships).map(field => {
       const genericOpts = mergeOptions(
         {},
         opts,
         {
           validate: {},
-          generatorOptions: { field: field },
+          generatorOptions: { field },
         }
       );
       genericOpts.hapi.path = genericOpts.hapi.path.replace('{field}', field);

@@ -22,18 +22,11 @@ describe('Base Plump Routes', () => {
     return hapi.register(basePlugin.plugin, { routes: { prefix: '/api' } });
   });
 
-  it('Exposes the object schema at /schema', () => {
-    return hapi.inject('/api/schema')
-    .then((response) => {
-      return expect(JSON.parse(response.payload).schema).to.deep.equal(TestType.toJSON());
-    });
-  });
-
   it('C', () => {
     return hapi.inject({
       method: 'POST',
       url: '/api',
-      payload: JSON.stringify({ name: 'potato' }),
+      payload: JSON.stringify({ attributes: { name: 'potato' } }),
     })
     .then((response) => {
       return expect(JSON.parse(response.payload)).to.have.deep.property('attributes.name', 'potato');
@@ -56,7 +49,7 @@ describe('Base Plump Routes', () => {
       return hapi.inject({
         method: 'PATCH',
         url: `/api/${one.$id}`,
-        payload: JSON.stringify({ name: 'grotato' }),
+        payload: JSON.stringify({ attributes: { name: 'grotato' } }),
       });
     })
     .then(() => expect(one.$get()).to.eventually.have.deep.property('attributes.name', 'grotato'));

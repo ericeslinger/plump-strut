@@ -34,7 +34,7 @@ describe('HasMany Plump Routes', () => {
       return hapi.inject({
         method: 'PUT',
         url: `/api/${one.$id}/children`,
-        payload: JSON.stringify({ child_id: 100 }),
+        payload: JSON.stringify({ id: 100 }),
       });
     })
     .then((response) => {

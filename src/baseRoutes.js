@@ -14,13 +14,6 @@ export function createRoutes(opts = {}) {
         config: {},
       },
     },
-    schema: {
-      hapi: {
-        method: 'GET',
-        path: '/schema',
-        config: {},
-      },
-    },
     listChildren: {
       plural: true,
       validate: {
