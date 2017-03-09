@@ -177,6 +177,7 @@ export class BaseController {
             }
           }
         });
+        console.log(JSON.stringify(retVal, null, 2));
         return retVal;
       }
     } catch (err) {
