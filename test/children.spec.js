@@ -57,7 +57,7 @@ describe('HasMany Plump Routes', () => {
     .then((response) => {
       expect(response).to.have.property('statusCode', 200);
       return expect(one.$get('children')).to.eventually.have.property('relationships')
-      .that.deep.equals({ children: [{ id: 100 }] });
+        .that.deep.equals({ children: [{ id: 100 }] });
     });
   });
 

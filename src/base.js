@@ -34,24 +34,9 @@ export class BaseController {
 
   read() {
     return (request) => {
-      return request.pre.item.$get()
-      .then((obj) => {
-        return Bluebird.all(this.options.sideloads.map((field) => request.pre.item.$get(field)))
-        .then((values) => {
-          const sides = {};
-          values.forEach((v, idx) => {
-            sides[this.options.sideloads[idx]] = v;
-          });
-          return Object.assign({}, obj, sides);
-        });
-      }).then((resp) => {
-        return {
-          [this.Model.$name]: [resp],
-        };
-      });
+      return request.pre.item.$bulkGet();
     };
   }
-
 
   update() {
     return (request) => {
@@ -166,18 +151,18 @@ export class BaseController {
         });
 
         Object.keys(schema.relationships).forEach(relName => {
-          retVal.relationships[relName] = { id: Joi.number() };
+          const itemSchema = { id: Joi.number() };
 
           if (schema.relationships[relName].type.$extras) {
             const extras = schema.relationships[relName].type.$extras;
 
             for (const extra in extras) { // eslint-disable-line guard-for-in
               const extraType = extras[extra].type;
-              retVal.relationships[relName][extra] = Joi[extraType]();
+              itemSchema[extra] = Joi[extraType]();
             }
           }
+          retVal.relationships[relName] = Joi.array().items(itemSchema);
         });
-        console.log(JSON.stringify(retVal, null, 2));
         return retVal;
       }
     } catch (err) {

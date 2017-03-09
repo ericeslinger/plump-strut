@@ -34,11 +34,11 @@ describe('Base Plump Routes', () => {
   });
 
   it('R', () => {
-    const one = new TestType({ name: 'potato' }, plump);
+    const one = new TestType({ name: 'potato', otherName: '', extended: {} }, plump);
     return one.$save()
     .then(() => hapi.inject(`/api/${one.$id}`))
     .then((response) => {
-      return expect(one.$get()).to.eventually.deep.equal(JSON.parse(response.payload).tests[0]);
+      return expect(one.$get()).to.eventually.deep.equal(JSON.parse(response.payload).data);
     });
   });
 
@@ -56,13 +56,13 @@ describe('Base Plump Routes', () => {
   });
 
   it('D', () => {
-    const one = new TestType({ name: 'potato' }, plump);
+    const one = new TestType({ name: 'potato', otherName: '', extended: {} }, plump);
     let id;
     return one.$save()
     .then(() => hapi.inject(`/api/${one.$id}`))
     .then((response) => {
       id = one.$id;
-      return expect(one.$get()).to.eventually.deep.equal(JSON.parse(response.payload).tests[0]);
+      return expect(one.$get()).to.eventually.deep.equal(JSON.parse(response.payload).data);
     }).then(() => {
       return hapi.inject({
         method: 'DELETE',
