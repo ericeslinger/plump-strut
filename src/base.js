@@ -40,10 +40,7 @@ export class BaseController {
 
   update() {
     return (request) => {
-      return request.pre.item.$set(request.payload).$save()
-      .then((v) => {
-        return v.$get();
-      });
+      return request.pre.item.$set(request.payload).$save();
     };
   }
 
@@ -55,11 +52,7 @@ export class BaseController {
 
   create() {
     return (request) => {
-      return new this.Model(request.payload, this.plump)
-      .$save()
-      .then((v) => {
-        return v.$get();
-      });
+      return new this.Model(request.payload, this.plump).$save();
     };
   }
 
@@ -124,17 +117,16 @@ export class BaseController {
         if (field in schema.attributes) {
           return { [field]: Joi[schema.attributes[field].type]() };
         } else if (field in schema.relationships) {
-          const retVal = { id: Joi.number() };
+          const dataSchema = { id: Joi.number() };
 
           if (schema.relationships[field].type.$extras) {
             const extras = schema.relationships[field].type.$extras;
 
             Object.keys(extras).forEach(extra => {
-              const extraType = extras[extra].type;
-              retVal[extra] = Joi[extraType]();
+              dataSchema[extra] = Joi[extras[extra].type]();
             });
           }
-          return retVal;
+          return dataSchema;
         } else {
           return {};
         }
