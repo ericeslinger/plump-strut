@@ -10,7 +10,7 @@ function plugin(server, _, next) {
   server.route(
     this.constructor.routes
     .map((method) => this.route(method, baseRoutes[method]))
-    .reduce((acc, curr) => acc.concat(curr), []) // routeMany returns an array
+    .reduce((acc, curr) => acc.concat(curr), []) // routeRelationship returns an array
   );
   server.route(this.extraRoutes());
   next();
@@ -34,31 +34,13 @@ export class BaseController {
 
   read() {
     return (request) => {
-      return request.pre.item.$get()
-      .then((obj) => {
-        return Bluebird.all(this.options.sideloads.map((field) => request.pre.item.$get(field)))
-        .then((values) => {
-          const sides = {};
-          values.forEach((v, idx) => {
-            sides[this.options.sideloads[idx]] = v;
-          });
-          return Object.assign({}, obj, sides);
-        });
-      }).then((resp) => {
-        return {
-          [this.Model.$name]: [resp],
-        };
-      });
+      return request.pre.item.$bulkGet();
     };
   }
 
-
   update() {
     return (request) => {
-      return request.pre.item.$set(request.payload).$save()
-      .then((v) => {
-        return v.$get();
-      });
+      return request.pre.item.$set(request.payload).$save();
     };
   }
 
@@ -70,11 +52,7 @@ export class BaseController {
 
   create() {
     return (request) => {
-      return new this.Model(request.payload, this.plump)
-      .$save()
-      .then((v) => {
-        return v.$get();
-      });
+      return new this.Model(request.payload, this.plump).$save();
     };
   }
 
@@ -134,25 +112,55 @@ export class BaseController {
 
   createJoiValidator(field) {
     try {
+      const schema = this.Model.$schema;
       if (field) {
-        const relSchema = this.Model.$schema.relationships[field].type;
-        const validate = {
-          [relSchema.$sides[field].other.field]: Joi.number(),
-        };
-        if (relSchema.$extras) {
-          for (const extra in relSchema.$extras) { // eslint-disable-line guard-for-in
-            validate[extra] = Joi[relSchema.$extras[extra].type]();
+        if (field in schema.attributes) {
+          return { [field]: Joi[schema.attributes[field].type]() };
+        } else if (field in schema.relationships) {
+          const dataSchema = { id: Joi.number() };
+
+          if (schema.relationships[field].type.$extras) {
+            const extras = schema.relationships[field].type.$extras;
+
+            Object.keys(extras).forEach(extra => {
+              dataSchema.meta = dataSchema.meta || {};
+              dataSchema.meta[extra] = Joi[extras[extra].type]();
+            });
           }
+          return dataSchema;
+        } else {
+          return {};
         }
-        return validate;
       } else {
-        const retVal = {};
-        const attributes = this.Model.$schema.attributes;
-        for (const attr in attributes) {
-          if (!attributes[attr].readOnly) {
-            retVal[attr] = Joi[attributes[attr].type]();
+        const retVal = {
+          type: Joi.string(),
+          id: Joi.number(),
+          attributes: {},
+          relationships: {},
+        };
+
+        Object.keys(schema.attributes).forEach(attr => {
+          retVal.attributes[attr] = Joi[schema.attributes[attr].type]();
+        });
+
+        Object.keys(schema.relationships).forEach(relName => {
+          const itemSchema = { id: Joi.number() };
+
+          if (schema.relationships[relName].type.$extras) {
+            const extras = schema.relationships[relName].type.$extras;
+
+            for (const extra in extras) { // eslint-disable-line guard-for-in
+              const extraType = extras[extra].type;
+              itemSchema.meta = itemSchema.meta || {};
+              itemSchema.meta[extra] = Joi[extraType]();
+            }
           }
-        }
+          retVal.relationships[relName] = Joi.array()
+            .items({
+              op: Joi.string().valid('add', 'modify', 'remove'),
+              data: itemSchema,
+            });
+        });
         return retVal;
       }
     } catch (err) {
@@ -187,9 +195,9 @@ export class BaseController {
 
   route(method, opts) {
     if (opts.plural) {
-      return this.routeMany(method, opts);
+      return this.routeRelationships(method, opts);
     } else {
-      return this.routeOne(method, opts);
+      return this.routeAttributes(method, opts);
     }
   }
 
@@ -204,14 +212,14 @@ export class BaseController {
     };
   }
 
-  routeMany(method, opts) {
+  routeRelationships(method, opts) {
     return Object.keys(this.Model.$schema.relationships).map(field => {
       const genericOpts = mergeOptions(
         {},
         opts,
         {
           validate: {},
-          generatorOptions: { field: field },
+          generatorOptions: { field },
         }
       );
       genericOpts.hapi.path = genericOpts.hapi.path.replace('{field}', field);
@@ -219,11 +227,11 @@ export class BaseController {
         genericOpts.validate.payload = this.createJoiValidator(field);
       }
       genericOpts.plural = false;
-      return this.routeOne(method, genericOpts);
+      return this.routeAttributes(method, genericOpts);
     });
   }
 
-  routeOne(method, opts) {
+  routeAttributes(method, opts) {
     /*
     opts: {
       pre: [ANY PREHANDLERs]
@@ -274,7 +282,6 @@ export class BaseController {
 BaseController.routes = [
   'read',
   'query',
-  'schema',
   'listChildren',
   'addChild',
   'removeChild',

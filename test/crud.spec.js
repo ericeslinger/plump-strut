@@ -22,18 +22,11 @@ describe('Base Plump Routes', () => {
     return hapi.register(basePlugin.plugin, { routes: { prefix: '/api' } });
   });
 
-  it('Exposes the object schema at /schema', () => {
-    return hapi.inject('/api/schema')
-    .then((response) => {
-      return expect(JSON.parse(response.payload).schema).to.deep.equal(TestType.toJSON());
-    });
-  });
-
   it('C', () => {
     return hapi.inject({
       method: 'POST',
       url: '/api',
-      payload: JSON.stringify({ name: 'potato' }),
+      payload: JSON.stringify({ attributes: { name: 'potato' } }),
     })
     .then((response) => {
       return expect(JSON.parse(response.payload)).to.have.deep.property('attributes.name', 'potato');
@@ -41,11 +34,11 @@ describe('Base Plump Routes', () => {
   });
 
   it('R', () => {
-    const one = new TestType({ name: 'potato' }, plump);
+    const one = new TestType({ name: 'potato', otherName: '', extended: {} }, plump);
     return one.$save()
     .then(() => hapi.inject(`/api/${one.$id}`))
     .then((response) => {
-      return expect(one.$get()).to.eventually.deep.equal(JSON.parse(response.payload).tests[0]);
+      return expect(one.$get()).to.eventually.deep.equal(JSON.parse(response.payload).data);
     });
   });
 
@@ -56,20 +49,20 @@ describe('Base Plump Routes', () => {
       return hapi.inject({
         method: 'PATCH',
         url: `/api/${one.$id}`,
-        payload: JSON.stringify({ name: 'grotato' }),
+        payload: JSON.stringify({ attributes: { name: 'grotato' } }),
       });
     })
     .then(() => expect(one.$get()).to.eventually.have.deep.property('attributes.name', 'grotato'));
   });
 
   it('D', () => {
-    const one = new TestType({ name: 'potato' }, plump);
+    const one = new TestType({ name: 'potato', otherName: '', extended: {} }, plump);
     let id;
     return one.$save()
     .then(() => hapi.inject(`/api/${one.$id}`))
     .then((response) => {
       id = one.$id;
-      return expect(one.$get()).to.eventually.deep.equal(JSON.parse(response.payload).tests[0]);
+      return expect(one.$get()).to.eventually.deep.equal(JSON.parse(response.payload).data);
     }).then(() => {
       return hapi.inject({
         method: 'DELETE',

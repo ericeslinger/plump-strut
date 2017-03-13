@@ -34,7 +34,7 @@ describe('HasMany Plump Routes', () => {
       return hapi.inject({
         method: 'PUT',
         url: `/api/${one.$id}/children`,
-        payload: JSON.stringify({ child_id: 100 }),
+        payload: JSON.stringify({ id: 100 }),
       });
     })
     .then((response) => {
@@ -57,7 +57,7 @@ describe('HasMany Plump Routes', () => {
     .then((response) => {
       expect(response).to.have.property('statusCode', 200);
       return expect(one.$get('children')).to.eventually.have.property('relationships')
-      .that.deep.equals({ children: [{ id: 100 }] });
+        .that.deep.equals({ children: [{ id: 100 }] });
     });
   });
 
@@ -76,7 +76,8 @@ describe('HasMany Plump Routes', () => {
         payload: JSON.stringify({ perm: 3 }),
       });
     })
-    .then(() => {
+    .then((response) => {
+      expect(response).to.have.property('statusCode', 200);
       return expect(plump.find('tests', one.$id).$get('valenceChildren'))
         .to.eventually.have.property('relationships')
         .that.deep.equals({ valenceChildren: [{ id: 100, meta: { perm: 3 } }] });
@@ -97,7 +98,8 @@ describe('HasMany Plump Routes', () => {
         url: `/api/${one.$id}/children/100`,
       });
     })
-    .then(() => {
+    .then((response) => {
+      expect(response).to.have.property('statusCode', 200);
       return expect(plump.find('tests', one.$id).$get('children')).to.eventually.have.property('relationships')
       .that.deep.equals({ children: [] });
     });
