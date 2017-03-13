@@ -123,7 +123,8 @@ export class BaseController {
             const extras = schema.relationships[field].type.$extras;
 
             Object.keys(extras).forEach(extra => {
-              dataSchema[extra] = Joi[extras[extra].type]();
+              dataSchema.meta = dataSchema.meta || {};
+              dataSchema.meta[extra] = Joi[extras[extra].type]();
             });
           }
           return dataSchema;
