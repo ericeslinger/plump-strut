@@ -2,14 +2,16 @@
 /* eslint no-shadow: 0 */
 
 import { Plump, MemoryStore } from 'plump';
-import { TestType } from 'plump/test/testType';
+import { TestType } from './testType';
 import { BaseController } from '../src/base';
 
-import chai from 'chai';
-import Hapi from 'hapi';
-import Boom from 'boom';
-import chaiAsPromised from 'chai-as-promised';
+import * as chai from 'chai';
+import * as Hapi from 'hapi';
+import * as Boom from 'boom';
+import * as chaiAsPromised from 'chai-as-promised';
+import 'mocha';
 
+import './hapiOverrides';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -24,15 +26,16 @@ describe('Base Plump Routes', () => {
       }
     }
     const ms = new MemoryStore({ terminal: true });
-    const plump = new Plump({ types: [TestType], storage: [ms] });
+    const plump = new Plump();
     const basePlugin = new FourOhThree(plump, TestType);
     const hapi = new Hapi.Server();
     const one = new TestType({ name: 'potato' }, plump);
     hapi.connection({ port: 80 });
-    return hapi.register(basePlugin.plugin, { routes: { prefix: '/api' } })
-    .then(() => one.$save())
-    .then(() => {
-      return expect(hapi.inject(`/api/${one.$id}`)).to.eventually.have.property('statusCode', 403);
-    });
+    return plump.setTerminal(ms)
+    .then(() => plump.addType(TestType))
+    .then(() => hapi.register(basePlugin.plugin, { routes: { prefix: '/api' } }))
+    .then(() => one.save())
+    .then(() => hapi.inject(`/api/${one.id}`))
+    .then((v) => expect(v).to.have.property('statusCode', 403));
   });
 });

@@ -1,8 +1,9 @@
-import Boom from 'boom';
-import Joi from 'joi';
-import { createRoutes } from './baseRoutes';
-import Bluebird from 'bluebird';
-import mergeOptions from 'merge-options';
+import * as Boom from 'boom';
+import * as Joi from 'joi';
+import { createRoutes } from './routes';
+import * as mergeOptions from 'merge-options';
+import { Model, Plump, ModelData, PackagedModelData } from 'plump';
+import * as Hapi from 'hapi';
 
 const baseRoutes = createRoutes();
 
@@ -16,15 +17,38 @@ function plugin(server, _, next) {
   next();
 }
 
+declare interface RoutedItem extends Hapi.Request {
+  pre: {
+    item: {
+      ref: Model,
+      data: ModelData,
+    };
+  };
+}
+
+declare interface StrutHandler<T> {
+  (request: Hapi.Request): Promise<T>;
+}
+
 export class BaseController {
-  constructor(plump, Model, options = {}) {
+  public plump: Plump;
+  public model: typeof Model;
+  public options;
+  public plugin: {
+    attributes: {
+      version: string,
+      name: string
+    }
+  };
+  static routes: string[];
+  constructor(plump: Plump, model: typeof Model, options = {}) {
     this.plump = plump;
-    this.Model = Model;
+    this.model = model;
     this.options = Object.assign({}, { sideloads: [] }, options);
     this.plugin = plugin.bind(this);
     this.plugin.attributes = Object.assign({}, {
       version: '1.0.0',
-      name: this.Model.$name,
+      name: this.model.typeName,
     }, this.options.plugin);
   }
 
@@ -32,74 +56,80 @@ export class BaseController {
     return [];
   }
 
-  read() {
-    return (request) => {
-      return request.pre.item.$bulkGet();
+  read(): StrutHandler<PackagedModelData> {
+    return (request: RoutedItem) => {
+      return Promise.resolve({
+        typeName: this.model.typeName,
+        id: request.pre.item.ref.id,
+        data: request.pre.item.data,
+        included: []
+      });
     };
   }
 
-  update() {
-    return (request) => {
-      return request.pre.item.$set(request.payload).$save();
+  update(): StrutHandler<ModelData> {
+    return (request: RoutedItem) => {
+      return request.pre.item.ref.set(request.payload).save();
     };
   }
 
-  delete() {
-    return (request) => {
-      return request.pre.item.$delete();
+  delete(): StrutHandler<void> {
+    return (request: RoutedItem) => {
+      return request.pre.item.ref.delete();
     };
   }
 
-  create() {
+  create(): StrutHandler<ModelData> {
     return (request) => {
-      return new this.Model(request.payload, this.plump).$save();
+      return new this.model(request.payload.attributes, this.plump).save();
     };
   }
 
   addChild({ field }) {
-    return (request) => {
-      return request.pre.item.$add(field, request.payload).$save();
+    return (request: RoutedItem) => {
+      return request.pre.item.ref.add(field, request.payload).save();
     };
   }
 
-  listChildren({ field }) {
-    return (request) => {
-      return request.pre.item.$get(field)
-      .then((list) => {
-        return { [field]: list };
+  listChildren({ field }): StrutHandler<PackagedModelData> {
+    return (request: RoutedItem) => {
+      return request.pre.item.ref.get(`relationships.${field}`)
+      .then((v) => {
+        return {
+          data: v,
+          id: v.id,
+          typeName: v.typeName,
+          included: [],
+        };
       });
     };
   }
 
   removeChild({ field }) {
-    return (request) => {
-      return request.pre.item.$remove(field, request.params.childId).$save();
+    return (request: RoutedItem) => {
+      return request.pre.item.ref.remove(field, { id: request.params.childId } ).save();
     };
   }
 
   modifyChild({ field }) {
-    return (request) => {
-      return request.pre.item.$modifyRelationship(field, request.params.childId, request.payload).$save();
+    return (request: RoutedItem) => {
+      const update = {
+        id: request.params.childId,
+        meta: request.payload.meta,
+      };
+      return request.pre.item.ref.modifyRelationship(field, update).save();
     };
   }
 
   query() {
     return (request) => {
-      return this.plump.query(this.Model.$name, request.query);
+      return this.plump.query(request.query);
     };
   }
 
-  schema() {
-    return () => {
-      return Bluebird.resolve({
-        schema: JSON.parse(JSON.stringify(this.Model)),
-      });
-    };
-  }
-
-  createHandler(method, options) {
+  createHandler(method, options): Hapi.ISessionHandler {
     const handler = this[method](options);
-    return (request, reply) => {
+    return (request: Hapi.Request, reply: Hapi.IReply) => {
       return handler(request)
       .then((response) => {
         reply(response).code(200);
@@ -110,17 +140,19 @@ export class BaseController {
     };
   }
 
-  createJoiValidator(field) {
+  createJoiValidator(field?: string) {
     try {
-      const schema = this.Model.$schema;
+      const schema = this.model.schema;
       if (field) {
         if (field in schema.attributes) {
           return { [field]: Joi[schema.attributes[field].type]() };
         } else if (field in schema.relationships) {
-          const dataSchema = { id: Joi.number() };
+          const dataSchema: any = {
+            id: Joi.number(),
+          };
 
-          if (schema.relationships[field].type.$extras) {
-            const extras = schema.relationships[field].type.$extras;
+          if (schema.relationships[field].type.extras) {
+            const extras = schema.relationships[field].type.extras;
 
             Object.keys(extras).forEach(extra => {
               dataSchema.meta = dataSchema.meta || {};
@@ -132,7 +164,7 @@ export class BaseController {
           return {};
         }
       } else {
-        const retVal = {
+        const retVal: any = {
           type: Joi.string(),
           id: Joi.number(),
           attributes: {},
@@ -144,10 +176,10 @@ export class BaseController {
         });
 
         Object.keys(schema.relationships).forEach(relName => {
-          const itemSchema = { id: Joi.number() };
+          const itemSchema: any = { id: Joi.number() };
 
-          if (schema.relationships[relName].type.$extras) {
-            const extras = schema.relationships[relName].type.$extras;
+          if (schema.relationships[relName].type.extras) {
+            const extras = schema.relationships[relName].type.extras;
 
             for (const extra in extras) { // eslint-disable-line guard-for-in
               const extraType = extras[extra].type;
@@ -155,11 +187,10 @@ export class BaseController {
               itemSchema.meta[extra] = Joi[extraType]();
             }
           }
-          retVal.relationships[relName] = Joi.array()
-            .items({
-              op: Joi.string().valid('add', 'modify', 'remove'),
-              data: itemSchema,
-            });
+          retVal.relationships[relName] = Joi.array().items(Joi.object({
+            op: Joi.string().valid('add', 'modify', 'remove'),
+            data: itemSchema,
+          }));
         });
         return retVal;
       }
@@ -173,11 +204,14 @@ export class BaseController {
     return {
       method: (request, reply) => {
         if (request.params && request.params.itemId) {
-          const item = this.plump.find(this.Model.$name, request.params.itemId);
-          return item.$get()
+          const item = this.plump.find(this.model.typeName, request.params.itemId);
+          return item.get()
           .then((thing) => {
             if (thing) {
-              reply(item);
+              reply({
+                ref: item,
+                data: thing,
+              });
             } else {
               reply(Boom.notFound());
             }
@@ -213,7 +247,7 @@ export class BaseController {
   }
 
   routeRelationships(method, opts) {
-    return Object.keys(this.Model.$schema.relationships).map(field => {
+    return Object.keys(this.model.schema.relationships).map(field => {
       const genericOpts = mergeOptions(
         {},
         opts,
