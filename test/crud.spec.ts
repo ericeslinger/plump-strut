@@ -1,6 +1,3 @@
-/* eslint-env node, mocha*/
-/* eslint no-shadow: 0 */
-
 import { Plump, MemoryStore } from 'plump';
 import { BaseController } from '../src/base';
 import { TestType } from './testType';
@@ -9,27 +6,9 @@ import * as chai from 'chai';
 import * as Hapi from 'hapi';
 import * as chaiAsPromised from 'chai-as-promised';
 
+import './hapiOverrides';
+
 import 'mocha';
-
-import { IPromise } from 'hapi';
-
-declare module 'hapi' {
-  interface Server {
-    register(plugins: any | any[], options: {
-        select?: string | string[];
-        routes?: {
-            prefix: string; vhost?: string | string[]
-        };
-    }, callback: (err: any) => void): void;
-    register(plugins: any | any[], options: {
-        select?: string | string[];
-        routes?: {
-            prefix: string; vhost?: string | string[]
-        };
-    }): IPromise<any>;
-  }
-}
-
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

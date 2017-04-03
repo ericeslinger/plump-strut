@@ -3,105 +3,103 @@
 
 import { Plump, MemoryStore } from 'plump';
 import { BaseController } from '../src/base';
-import { TestType } from 'plump/test/testType';
+import { TestType } from './testType';
 
-import Bluebird from 'bluebird';
-Bluebird.config({
-  longStackTraces: true,
-});
+import * as chai from 'chai';
+import * as Hapi from 'hapi';
+import * as chaiAsPromised from 'chai-as-promised';
 
-import chai from 'chai';
-import Hapi from 'hapi';
-import chaiAsPromised from 'chai-as-promised';
+import './hapiOverrides';
+import 'mocha';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 describe('HasMany Plump Routes', () => {
   const ms = new MemoryStore({ terminal: true });
-  const plump = new Plump({ types: [TestType], storage: [ms] });
+  const plump = new Plump();
   const basePlugin = new BaseController(plump, TestType);
   const hapi = new Hapi.Server();
   hapi.connection({ port: 80 });
 
   before(() => {
-    return hapi.register(basePlugin.plugin, { routes: { prefix: '/api' } });
+    return plump.setTerminal(ms)
+    .then(() => plump.addType(TestType))
+    .then(() => hapi.register(basePlugin.plugin, { routes: { prefix: '/api' } }));
   });
 
   it('C', () => {
     const one = new TestType({ name: 'potato' }, plump);
-    return one.$save()
+    return one.save()
     .then(() => {
       return hapi.inject({
         method: 'PUT',
-        url: `/api/${one.$id}/children`,
+        url: `/api/${one.id}/children`,
         payload: JSON.stringify({ id: 100 }),
       });
     })
     .then((response) => {
       expect(response).to.have.property('statusCode', 200);
-      return expect(one.$get('children')).to.eventually.have.property('relationships')
-      .that.deep.equals({ children: [{ id: 100 }] });
+      return one.get('relationships.children')
+      .then((v) => expect(v.relationships.children).to.deep.equal([{ id: 100 }]));
     });
   });
 
   it('R', () => {
     const one = new TestType({ name: 'potato' }, plump);
-    return one.$save()
-    .then(() => one.$add('children', 100).$save())
+    return one.save()
+    .then(() => one.add('children', { id: 100 }).save())
+    .then(() => one.get('relationships.children'))
+    .then((v) => expect(v.relationships.children).to.deep.equal([{ id: 100 }]))
     .then(() => {
       return hapi.inject({
         method: 'GET',
-        url: `/api/${one.$id}/children`,
+        url: `/api/${one.id}/children`,
       });
     })
     .then((response) => {
       expect(response).to.have.property('statusCode', 200);
-      return expect(one.$get('children')).to.eventually.have.property('relationships')
-        .that.deep.equals({ children: [{ id: 100 }] });
+      expect(JSON.parse(response.payload).data.relationships.children).to.deep.equal([{ id: 100 }]);
     });
   });
 
   it('U', () => {
     const one = new TestType({ name: 'potato' }, plump);
-    return one.$save()
-    .then(() => one.$add('valenceChildren', 100, { perm: 2 }).$save())
-    .then(() => {
-      return expect(one.$get('valenceChildren')).to.eventually.have.property('relationships')
-      .that.deep.equals({ valenceChildren: [{ id: 100, meta: { perm: 2 } }] });
+    return one.save()
+    .then(() => one.add('valenceChildren', { id: 100, meta: { perm: 2 } }).save())
+    .then(() => one.get('relationships.valenceChildren'))
+    .then((v) => {
+      expect(v.relationships.valenceChildren).to.deep.equal([{ id: 100, meta: { perm: 2 } }]);
     })
     .then(() => {
       return hapi.inject({
         method: 'PATCH',
-        url: `/api/${one.$id}/valenceChildren/100`,
+        url: `/api/${one.id}/valenceChildren/100`,
         payload: JSON.stringify({ perm: 3 }),
       });
     })
     .then((response) => {
       expect(response).to.have.property('statusCode', 200);
-      return expect(plump.find('tests', one.$id).$get('valenceChildren'))
-        .to.eventually.have.property('relationships')
-        .that.deep.equals({ valenceChildren: [{ id: 100, meta: { perm: 3 } }] });
-    });
+      return plump.find('tests', one.id).get('relationships.valenceChildren');
+    })
+    .then((v) => expect(v.relationships.valenceChildren).to.deep.equal([{ id: 100, meta: { perm: 3 } }]));
   });
 
   it('D', () => {
     const one = new TestType({ name: 'potato' }, plump);
-    return one.$save()
-    .then(() => one.$add('children', 100).$save())
-    .then(() => {
-      return expect(one.$get('children')).to.eventually.have.property('relationships')
-      .that.deep.equals({ children: [{ id: 100 }] });
-    })
+    return one.save()
+    .then(() => one.add('children', { id: 100 }).save())
+    .then(() => one.get('relationships.children'))
+    .then((v) => expect(v.relationships.children).to.deep.equal([{ id: 100 }]))
     .then(() => {
       return hapi.inject({
         method: 'DELETE',
-        url: `/api/${one.$id}/children/100`,
+        url: `/api/${one.id}/children/100`,
       });
     })
     .then((response) => {
       expect(response).to.have.property('statusCode', 200);
-      return expect(plump.find('tests', one.$id).$get('children')).to.eventually.have.property('relationships')
-      .that.deep.equals({ children: [] });
-    });
+      return plump.find('tests', one.id).get('relationships.children');
+    })
+    .then((v) => expect(v.relationships.children).to.deep.equal([]));
   });
 });

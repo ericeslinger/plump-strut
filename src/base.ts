@@ -79,7 +79,7 @@ export class BaseController {
     };
   }
 
-  create() {
+  create(): StrutHandler<ModelData> {
     return (request) => {
       return new this.model(request.payload.attributes, this.plump).save();
     };
@@ -91,9 +91,17 @@ export class BaseController {
     };
   }
 
-  listChildren({ field }) {
+  listChildren({ field }): StrutHandler<PackagedModelData> {
     return (request: RoutedItem) => {
-      return request.pre.item.ref.get(`relationships.${field}`);
+      return request.pre.item.ref.get(`relationships.${field}`)
+      .then((v) => {
+        return {
+          data: v,
+          id: v.id,
+          typeName: v.typeName,
+          included: [],
+        };
+      });
     };
   }
 

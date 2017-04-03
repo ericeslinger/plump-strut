@@ -11,27 +11,7 @@ import * as Boom from 'boom';
 import * as chaiAsPromised from 'chai-as-promised';
 import 'mocha';
 
-// import '../hapiOverrides';
-
-import { IPromise } from 'hapi';
-
-declare module 'hapi' {
-  interface Server {
-    register(plugins: any | any[], options: {
-        select?: string | string[];
-        routes?: {
-            prefix: string; vhost?: string | string[]
-        };
-    }, callback: (err: any) => void): void;
-    register(plugins: any | any[], options: {
-        select?: string | string[];
-        routes?: {
-            prefix: string; vhost?: string | string[]
-        };
-    }): IPromise<any>;
-  }
-}
-
+import './hapiOverrides';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
