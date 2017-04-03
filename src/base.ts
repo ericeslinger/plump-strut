@@ -113,7 +113,11 @@ export class BaseController {
 
   modifyChild({ field }) {
     return (request: RoutedItem) => {
-      return request.pre.item.ref.modifyRelationship(field, request.payload).save();
+      const update = {
+        id: request.params.childId,
+        meta: request.payload.meta,
+      };
+      return request.pre.item.ref.modifyRelationship(field, update).save();
     };
   }
 

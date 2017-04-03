@@ -74,7 +74,7 @@ describe('HasMany Plump Routes', () => {
       return hapi.inject({
         method: 'PATCH',
         url: `/api/${one.id}/valenceChildren/100`,
-        payload: JSON.stringify({ perm: 3 }),
+        payload: JSON.stringify({ meta: { perm: 3 } }),
       });
     })
     .then((response) => {
