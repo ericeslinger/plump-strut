@@ -1,6 +1,6 @@
-import Joi from 'joi';
+import * as Joi from 'joi';
 
-export function createRoutes(opts = {}) {
+export function createRoutes(opts: any = {}) {
   const retVal = {
     read: {
       validate: {

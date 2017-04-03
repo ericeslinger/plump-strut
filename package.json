@@ -4,7 +4,7 @@
   "description": "Adapter for creating CRUD route handlers for plump object in hapi.js",
   "main": "dist/base.js",
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register test/*.spec.js --require test/helper.js"
+    "test": "mocha  --require ts-node/register test/*.spec.ts"
   },
   "repository": {
     "type": "git",
@@ -22,9 +22,12 @@
   },
   "homepage": "https://github.com/kstf/plump-strut#readme",
   "devDependencies": {
+    "@types/boom": "0.0.33",
     "@types/chai": "^3.4.35",
     "@types/chai-as-promised": "0.0.30",
     "@types/core-js": "^0.9.38",
+    "@types/hapi": "^16.0.0",
+    "@types/joi": "^10.0.1",
     "@types/mocha": "^2.2.40",
     "@types/node": "^7.0.10",
     "chai": "^3.5.0",
@@ -33,8 +36,8 @@
     "gulp": "gulpjs/gulp.git#4.0",
     "gulp-mocha": "^3.0.1",
     "gulp-sourcemaps": "^1.9.1",
-    "mocha": "^3.2.0",
     "gulp-typescript": "^3.1.6",
+    "mocha": "^3.2.0",
     "ts-node": "^3.0.2",
     "tslint": "^4.5.1",
     "tslint-eslint-rules": "^3.5.1",
