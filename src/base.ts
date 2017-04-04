@@ -2,7 +2,8 @@ import * as Boom from 'boom';
 import * as Joi from 'joi';
 import { createRoutes } from './routes';
 import * as mergeOptions from 'merge-options';
-import { Model, Plump, ModelData, PackagedModelData } from 'plump';
+import { Model, Plump, ModelData, PackagedModelData, ModelReference } from 'plump'; // tslint:disable-line no-unused-variable
+// need to import ModelReference because some of the methods return them.
 import * as Hapi from 'hapi';
 
 const baseRoutes = createRoutes();
@@ -17,7 +18,7 @@ function plugin(server, _, next) {
   next();
 }
 
-declare interface RoutedItem extends Hapi.Request {
+export interface RoutedItem extends Hapi.Request {
   pre: {
     item: {
       ref: Model,
@@ -26,7 +27,7 @@ declare interface RoutedItem extends Hapi.Request {
   };
 }
 
-declare interface StrutHandler<T> {
+export interface StrutHandler<T> {
   (request: Hapi.Request): Promise<T>;
 }
 
