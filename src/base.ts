@@ -2,7 +2,7 @@ import * as Boom from 'boom';
 import * as Joi from 'joi';
 import { createRoutes } from './routes';
 import * as mergeOptions from 'merge-options';
-import { Model, Plump, ModelData, PackagedModelData, ModelReference } from 'plump'; // tslint:disable-line no-unused-variable
+import { Model, Plump, ModelData, ModelReference } from 'plump'; // tslint:disable-line no-unused-variable
 // need to import ModelReference because some of the methods return them.
 import * as Hapi from 'hapi';
 
@@ -57,15 +57,8 @@ export class BaseController {
     return [];
   }
 
-  read(): StrutHandler<PackagedModelData> {
-    return (request: RoutedItem) => {
-      return Promise.resolve({
-        typeName: this.model.typeName,
-        id: request.pre.item.ref.id,
-        data: request.pre.item.data,
-        included: []
-      });
-    };
+  read(): StrutHandler<ModelData> {
+    return (request: RoutedItem) => Promise.resolve(request.pre.item.data);
   }
 
   update(): StrutHandler<ModelData> {
@@ -92,18 +85,8 @@ export class BaseController {
     };
   }
 
-  listChildren({ field }): StrutHandler<PackagedModelData> {
-    return (request: RoutedItem) => {
-      return request.pre.item.ref.get(`relationships.${field}`)
-      .then((v) => {
-        return {
-          data: v,
-          id: v.id,
-          typeName: v.typeName,
-          included: [],
-        };
-      });
-    };
+  listChildren({ field }): StrutHandler<ModelData> {
+    return (request: RoutedItem) => request.pre.item.ref.get(`relationships.${field}`);
   }
 
   removeChild({ field }) {
@@ -166,7 +149,7 @@ export class BaseController {
         }
       } else {
         const retVal: any = {
-          type: Joi.string(),
+          typeName: Joi.string(),
           id: Joi.number(),
           attributes: {},
           relationships: {},

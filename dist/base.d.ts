@@ -1,4 +1,4 @@
-import { Model, Plump, ModelData, PackagedModelData, ModelReference } from 'plump';
+import { Model, Plump, ModelData, ModelReference } from 'plump';
 import * as Hapi from 'hapi';
 export interface RoutedItem extends Hapi.Request {
     pre: {
@@ -24,7 +24,7 @@ export declare class BaseController {
     static routes: string[];
     constructor(plump: Plump, model: typeof Model, options?: {});
     extraRoutes(): any[];
-    read(): StrutHandler<PackagedModelData>;
+    read(): StrutHandler<ModelData>;
     update(): StrutHandler<ModelData>;
     delete(): StrutHandler<void>;
     create(): StrutHandler<ModelData>;
@@ -33,7 +33,7 @@ export declare class BaseController {
     }): (request: RoutedItem) => Promise<ModelData>;
     listChildren({field}: {
         field: any;
-    }): StrutHandler<PackagedModelData>;
+    }): StrutHandler<ModelData>;
     removeChild({field}: {
         field: any;
     }): (request: RoutedItem) => Promise<ModelData>;
