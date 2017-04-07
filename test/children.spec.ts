@@ -58,7 +58,7 @@ describe('HasMany Plump Routes', () => {
     })
     .then((response) => {
       expect(response).to.have.property('statusCode', 200);
-      expect(JSON.parse(response.payload).data.relationships.children).to.deep.equal([{ id: 100 }]);
+      expect(JSON.parse(response.payload).relationships.children).to.deep.equal([{ id: 100 }]);
     });
   });
 

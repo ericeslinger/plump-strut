@@ -44,8 +44,8 @@ describe('Base Plump Routes', () => {
       return one.get()
       .then((v) => {
         const resp = JSON.parse(response.payload);
-        expect(resp.data.attributes.name).to.equal('potato');
-        return expect(resp.data.id).to.equal(v.id);
+        expect(resp.attributes.name).to.equal('potato');
+        return expect(resp.id).to.equal(v.id);
       });
     });
   });
@@ -70,7 +70,7 @@ describe('Base Plump Routes', () => {
     .then(() => hapi.inject(`/api/${one.id}`))
     .then((response) => {
       id = one.id;
-      return expect(one.get()).to.eventually.deep.equal(JSON.parse(response.payload).data);
+      return expect(one.get()).to.eventually.deep.equal(JSON.parse(response.payload));
     }).then(() => {
       return hapi.inject({
         method: 'DELETE',
