@@ -1,6 +1,6 @@
 {
   "name": "plump-strut",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Adapter for creating CRUD route handlers for plump object in hapi.js",
   "main": "dist/base.js",
   "scripts": {
@@ -39,16 +39,15 @@
     "gulp-typescript": "^3.1.6",
     "mocha": "^3.2.0",
     "ts-node": "^3.0.2",
-    "tslint": "^5.0.0",
-    "tslint-eslint-rules": "^3.5.1",
+    "tslint": "^5.1.0",
+    "tslint-eslint-rules": "^4.0.0",
     "typescript": "^2.2.2"
   },
   "peerDependencies": {
     "boom": "^4.2.0",
     "joi": "^10.1.0",
-    "plump": "kstf/plump",
-    "hapi": "^16.0.0",
-    "plump-strut": "kstf/plump-strut"
+    "plump": "^0.12.0",
+    "hapi": "^16.0.0"
   },
   "dependencies": {
     "merge-options": "0.0.64"
