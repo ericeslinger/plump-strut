@@ -188,7 +188,7 @@ export class BaseController {
     return {
       method: (request, reply) => {
         if (request.params && request.params.itemId) {
-          const item = this.plump.find(this.model.typeName, request.params.itemId);
+          const item = this.plump.find({ typeName: this.model.typeName, id: request.params.itemId });
           return item.get()
           .then((thing) => {
             if (thing) {

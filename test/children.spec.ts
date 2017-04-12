@@ -79,7 +79,7 @@ describe('HasMany Plump Routes', () => {
     })
     .then((response) => {
       expect(response).to.have.property('statusCode', 200);
-      return plump.find('tests', one.id).get('relationships.valenceChildren');
+      return plump.find({ typeName: 'tests', id: one.id }).get('relationships.valenceChildren');
     })
     .then((v) => expect(v.relationships.valenceChildren).to.deep.equal([{ id: 100, meta: { perm: 3 } }]));
   });
@@ -98,7 +98,7 @@ describe('HasMany Plump Routes', () => {
     })
     .then((response) => {
       expect(response).to.have.property('statusCode', 200);
-      return plump.find('tests', one.id).get('relationships.children');
+      return plump.find({ typeName: 'tests', id: one.id }).get('relationships.children');
     })
     .then((v) => expect(v.relationships.children).to.deep.equal([]));
   });
