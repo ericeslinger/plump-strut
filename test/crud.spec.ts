@@ -6,9 +6,22 @@ import * as chai from 'chai';
 import * as Hapi from 'hapi';
 import * as chaiAsPromised from 'chai-as-promised';
 
-import './hapiOverrides';
-
 import 'mocha';
+
+declare module 'hapi' {
+  interface Server {
+    register(
+      plugins: any | any[],
+      options: {
+        select?: string | string[];
+        routes: {
+          prefix: string; vhost?: string | string[]
+        };
+      }): Promise<any>;
+  }
+}
+
+
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
