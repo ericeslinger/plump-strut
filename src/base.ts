@@ -18,10 +18,10 @@ function plugin(server, _, next) {
   next();
 }
 
-export interface RoutedItem extends Hapi.Request {
+export interface RoutedItem<T extends ModelData> extends Hapi.Request {
   pre: {
     item: {
-      ref: Model,
+      ref: Model<T>,
       data: ModelData,
     };
   };
@@ -58,17 +58,17 @@ export class BaseController {
   }
 
   read(): StrutHandler<ModelData> {
-    return (request: RoutedItem) => Promise.resolve(request.pre.item.data);
+    return (request: RoutedItem<ModelData>) => Promise.resolve(request.pre.item.data);
   }
 
   update(): StrutHandler<ModelData> {
-    return (request: RoutedItem) => {
+    return (request: RoutedItem<ModelData>) => {
       return request.pre.item.ref.set(request.payload).save();
     };
   }
 
   delete(): StrutHandler<void> {
-    return (request: RoutedItem) => {
+    return (request: RoutedItem<ModelData>) => {
       return request.pre.item.ref.delete();
     };
   }
@@ -80,23 +80,23 @@ export class BaseController {
   }
 
   addChild({ field }) {
-    return (request: RoutedItem) => {
+    return (request: RoutedItem<ModelData>) => {
       return request.pre.item.ref.add(field, request.payload).save();
     };
   }
 
   listChildren({ field }): StrutHandler<ModelData> {
-    return (request: RoutedItem) => request.pre.item.ref.get(`relationships.${field}`);
+    return (request: RoutedItem<ModelData>) => request.pre.item.ref.get(`relationships.${field}`);
   }
 
   removeChild({ field }) {
-    return (request: RoutedItem) => {
+    return (request: RoutedItem<ModelData>) => {
       return request.pre.item.ref.remove(field, { id: request.params.childId } ).save();
     };
   }
 
   modifyChild({ field }) {
-    return (request: RoutedItem) => {
+    return (request: RoutedItem<ModelData>) => {
       const update = {
         id: request.params.childId,
         meta: request.payload.meta,

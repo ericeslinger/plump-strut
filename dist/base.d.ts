@@ -1,9 +1,9 @@
 import { Model, Plump, ModelData, ModelReference } from 'plump';
 import * as Hapi from 'hapi';
-export interface RoutedItem extends Hapi.Request {
+export interface RoutedItem<T extends ModelData> extends Hapi.Request {
     pre: {
         item: {
-            ref: Model;
+            ref: Model<T>;
             data: ModelData;
         };
     };
@@ -30,16 +30,16 @@ export declare class BaseController {
     create(): StrutHandler<ModelData>;
     addChild({field}: {
         field: any;
-    }): (request: RoutedItem) => Promise<ModelData>;
+    }): (request: RoutedItem<ModelData>) => Promise<ModelData>;
     listChildren({field}: {
         field: any;
     }): StrutHandler<ModelData>;
     removeChild({field}: {
         field: any;
-    }): (request: RoutedItem) => Promise<ModelData>;
+    }): (request: RoutedItem<ModelData>) => Promise<ModelData>;
     modifyChild({field}: {
         field: any;
-    }): (request: RoutedItem) => Promise<ModelData>;
+    }): (request: RoutedItem<ModelData>) => Promise<ModelData>;
     query(): (request: any) => Promise<ModelReference[]>;
     createHandler(method: any, options: any): Hapi.ISessionHandler;
     createJoiValidator(field?: string): any;
