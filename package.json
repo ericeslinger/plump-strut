@@ -50,6 +50,6 @@
     "hapi": "^16.0.0"
   },
   "dependencies": {
-    "merge-options": "0.0.64"
+    "merge-options": "1.0.0"
   }
 }
