@@ -1,8 +1,9 @@
 {
   "name": "plump-strut",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "description": "Adapter for creating CRUD route handlers for plump object in hapi.js",
-  "main": "dist/base.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "mocha  --require ts-node/register test/*.spec.ts"
   },
@@ -50,6 +51,6 @@
     "hapi": "^16.0.0"
   },
   "dependencies": {
-    "merge-options": "0.0.64"
+    "merge-options": "1.0.0"
   }
 }
