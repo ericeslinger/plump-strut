@@ -49,7 +49,7 @@ export class BaseController {
     this.plugin = plugin.bind(this);
     this.plugin.attributes = Object.assign({}, {
       version: '1.0.0',
-      name: this.model.typeName,
+      name: this.model.type,
     }, this.options.plugin);
   }
 
@@ -111,9 +111,9 @@ export class BaseController {
     };
   }
 
-  createHandler(method, options): Hapi.ISessionHandler {
+  createHandler(method, options): Hapi.RouteHandler {
     const handler = this[method](options);
-    return (request: Hapi.Request, reply: Hapi.IReply) => {
+    return (request: Hapi.Request, reply: Hapi.Base_Reply) => {
       return handler(request)
       .then((response) => {
         reply(response).code(200);
@@ -149,7 +149,7 @@ export class BaseController {
         }
       } else {
         const retVal: any = {
-          typeName: Joi.string(),
+          type: Joi.string(),
           id: Joi.number(),
           attributes: {},
           relationships: {},
@@ -188,7 +188,7 @@ export class BaseController {
     return {
       method: (request, reply) => {
         if (request.params && request.params.itemId) {
-          const item = this.plump.find({ typeName: this.model.typeName, id: request.params.itemId });
+          const item = this.plump.find({ type: this.model.type, id: request.params.itemId });
           return item.get()
           .then((thing) => {
             if (thing) {

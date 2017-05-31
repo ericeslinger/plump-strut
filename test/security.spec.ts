@@ -8,7 +8,6 @@ import { BaseController } from '../src/base';
 import * as chai from 'chai';
 import * as Hapi from 'hapi';
 import * as Boom from 'boom';
-import * as chaiAsPromised from 'chai-as-promised';
 import 'mocha';
 
 declare module 'hapi' {
@@ -26,7 +25,6 @@ declare module 'hapi' {
 
 
 
-chai.use(chaiAsPromised);
 const expect = chai.expect;
 describe('Base Plump Routes', () => {
   it('Results in a 403 if the authorization result fails', () => {

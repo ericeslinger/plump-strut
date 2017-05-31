@@ -7,7 +7,6 @@ import { TestType } from './testType';
 
 import * as chai from 'chai';
 import * as Hapi from 'hapi';
-import * as chaiAsPromised from 'chai-as-promised';
 
 import 'mocha';
 
@@ -25,7 +24,6 @@ declare module 'hapi' {
 }
 
 
-chai.use(chaiAsPromised);
 const expect = chai.expect;
 describe('HasMany Plump Routes', () => {
   const ms = new MemoryStore({ terminal: true });
@@ -92,7 +90,7 @@ describe('HasMany Plump Routes', () => {
     })
     .then((response) => {
       expect(response).to.have.property('statusCode', 200);
-      return plump.find({ typeName: 'tests', id: one.id }).get('relationships.valenceChildren');
+      return plump.find({ type: 'tests', id: one.id }).get('relationships.valenceChildren');
     })
     .then((v) => expect(v.relationships.valenceChildren).to.deep.equal([{ id: 100, meta: { perm: 3 } }]));
   });
@@ -111,7 +109,7 @@ describe('HasMany Plump Routes', () => {
     })
     .then((response) => {
       expect(response).to.have.property('statusCode', 200);
-      return plump.find({ typeName: 'tests', id: one.id }).get('relationships.children');
+      return plump.find({ type: 'tests', id: one.id }).get('relationships.children');
     })
     .then((v) => expect(v.relationships.children).to.deep.equal([]));
   });
