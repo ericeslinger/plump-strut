@@ -41,7 +41,7 @@ export declare class BaseController {
         field: any;
     }): (request: RoutedItem<ModelData>) => Promise<ModelData>;
     query(): (request: any) => Promise<ModelReference[]>;
-    createHandler(method: any, options: any): Hapi.ISessionHandler;
+    createHandler(method: any, options: any): Hapi.RouteHandler;
     createJoiValidator(field?: string): any;
     loadHandler(): {
         method: (request: any, reply: any) => any;

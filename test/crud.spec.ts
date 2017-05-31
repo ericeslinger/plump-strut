@@ -4,9 +4,17 @@ import { TestType } from './testType';
 
 import * as chai from 'chai';
 import * as Hapi from 'hapi';
-import * as chaiAsPromised from 'chai-as-promised';
 
 import 'mocha';
+
+declare global {
+  namespace Chai {
+    interface Assertion {
+      nested: Assertion;
+    }
+  }
+}
+
 
 declare module 'hapi' {
   interface Server {
@@ -23,7 +31,6 @@ declare module 'hapi' {
 
 
 
-chai.use(chaiAsPromised);
 const expect = chai.expect;
 describe('Base Plump Routes', () => {
   const ms = new MemoryStore({ terminal: true });
@@ -45,7 +52,7 @@ describe('Base Plump Routes', () => {
       payload: JSON.stringify({ attributes: { name: 'potato' } }),
     })
     .then((response) => {
-      return expect(JSON.parse(response.payload)).to.have.deep.property('attributes.name', 'potato');
+      return expect(JSON.parse(response.payload)).to.have.nested.property('attributes.name', 'potato');
     });
   });
 
@@ -73,7 +80,8 @@ describe('Base Plump Routes', () => {
         payload: JSON.stringify({ attributes: { name: 'grotato' } }),
       });
     })
-    .then(() => expect(one.get()).to.eventually.have.deep.property('attributes.name', 'grotato'));
+    .then(() => one.get())
+    .then((v) => expect(v).to.have.nested.property('attributes.name', 'grotato'));
   });
 
   it('D', () => {
@@ -83,14 +91,14 @@ describe('Base Plump Routes', () => {
     .then(() => hapi.inject(`/api/${one.id}`))
     .then((response) => {
       id = one.id;
-      return expect(one.get()).to.eventually.deep.equal(JSON.parse(response.payload));
+      return one.get()
+      .then((v) => expect(v).to.deep.equal(JSON.parse(response.payload)));
     }).then(() => {
       return hapi.inject({
         method: 'DELETE',
         url: `/api/${one.id}`,
       });
-    }).then(() => {
-      return expect(hapi.inject(`/api/${id}`)).to.eventually.have.property('statusCode', 404);
-    });
+    }).then(() => hapi.inject(`/api/${id}`))
+    .then((v) => expect(v).to.have.property('statusCode', 404));
   });
 });
