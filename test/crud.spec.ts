@@ -7,6 +7,15 @@ import * as Hapi from 'hapi';
 
 import 'mocha';
 
+declare global {
+  namespace Chai {
+    interface Assertion {
+      nested: Assertion;
+    }
+  }
+}
+
+
 declare module 'hapi' {
   interface Server {
     register(
@@ -43,7 +52,7 @@ describe('Base Plump Routes', () => {
       payload: JSON.stringify({ attributes: { name: 'potato' } }),
     })
     .then((response) => {
-      return expect(JSON.parse(response.payload)).to.have.deep.property('attributes.name', 'potato');
+      return expect(JSON.parse(response.payload)).to.have.nested.property('attributes.name', 'potato');
     });
   });
 
@@ -72,7 +81,7 @@ describe('Base Plump Routes', () => {
       });
     })
     .then(() => one.get())
-    .then((v) => expect(one).to.have.nested.property('attributes.name', 'grotato'));
+    .then((v) => expect(v).to.have.nested.property('attributes.name', 'grotato'));
   });
 
   it('D', () => {

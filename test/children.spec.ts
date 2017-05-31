@@ -10,6 +10,15 @@ import * as Hapi from 'hapi';
 
 import 'mocha';
 
+declare global {
+  namespace Chai {
+    interface Assertion {
+      nested: Assertion;
+    }
+  }
+}
+
+
 declare module 'hapi' {
   interface Server {
     register(
