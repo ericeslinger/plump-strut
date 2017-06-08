@@ -20,3 +20,26 @@ export type AuthenticationChannelMessage
   = ListAuthenticationChannelMessage
   | TestKeyAuthenticationChannelMessage
   | StartAuthenticationChannelMessage;
+
+export interface Response {
+  response: string;
+}
+
+export interface InvalidRequestResponse extends Response {
+  response: 'invalidRequest';
+}
+
+export interface ListResponse extends Response {
+  response: 'list';
+  types: string[];
+}
+
+export interface TestResponse extends Response {
+  response: 'testkey';
+  auth: boolean;
+}
+
+export type AuthenticationChannelResponse
+  = InvalidRequestResponse
+  | ListResponse
+  | TestResponse;

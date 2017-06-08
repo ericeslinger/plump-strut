@@ -7,15 +7,15 @@ export interface StrutConfig {
   models?: typeof Model[];
   apiRoot: string;
   apiProtocol: 'http' | 'https';
-  authTypes: any[];
+  authTypes: string[];
 }
 
-export class StrutServer<T> {
+export class StrutServer {
   public hapi: Hapi.Server;
   public io: SocketIO.Server;
 
 
-  constructor(public plump: Plump, public oracle: Oracle<T>, public config: StrutConfig) {
+  constructor(public plump: Plump, public oracle: Oracle, public config: StrutConfig) {
     this.hapi = new Hapi.Server();
   }
 
