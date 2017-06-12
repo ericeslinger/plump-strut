@@ -1,6 +1,7 @@
 import { Plump, MemoryStore } from 'plump';
-import { BaseController } from '../src/base';
+import { BaseController } from '../src/index';
 import { TestType } from './testType';
+import { StrutServer } from '../src/index';
 
 import * as chai from 'chai';
 import * as Hapi from 'hapi';
@@ -33,22 +34,30 @@ declare module 'hapi' {
 
 const expect = chai.expect;
 describe('Base Plump Routes', () => {
-  const ms = new MemoryStore({ terminal: true });
-  const plump = new Plump();
-  const basePlugin = new BaseController(plump, TestType);
-  const hapi = new Hapi.Server();
-  hapi.connection({ port: 80 });
+  const context = {
+    ms: new MemoryStore({ terminal: true }),
+    plump: new Plump(),
+    strut: null,
+  };
 
   before(() => {
-    return plump.setTerminal(ms)
-    .then(() => plump.addType(TestType))
-    .then(() => hapi.register(basePlugin.plugin, { routes: { prefix: '/api' } }));
+    return context.plump.setTerminal(context.ms)
+    .then(() => context.plump.addType(TestType))
+    .then(() => {
+      context.strut = new StrutServer(context.plump, null, {
+        apiPort: 4000,
+        apiProtocol: 'http',
+        apiRoot: '/api',
+        authTypes: [],
+      });
+      return context.strut.initialize();
+    });
   });
 
   it('C', () => {
-    return hapi.inject({
+    return context.strut.hapi.inject({
       method: 'POST',
-      url: '/api',
+      url: `/api/${TestType.type}`,
       payload: JSON.stringify({ attributes: { name: 'potato' } }),
     })
     .then((response) => {
@@ -57,9 +66,9 @@ describe('Base Plump Routes', () => {
   });
 
   it('R', () => {
-    const one = new TestType({ name: 'potato', otherName: '', extended: {} }, plump);
+    const one = new TestType({ name: 'potato', otherName: '', extended: {} }, context.plump);
     return one.save()
-    .then(() => hapi.inject(`/api/${one.id}`))
+    .then(() => context.strut.hapi.inject(`/api/${TestType.type}/${one.id}`))
     .then((response) => {
       return one.get()
       .then((v) => {
@@ -71,12 +80,12 @@ describe('Base Plump Routes', () => {
   });
 
   it('U', () => {
-    const one = new TestType({ name: 'potato' }, plump);
+    const one = new TestType({ name: 'potato' }, context.plump);
     return one.save()
     .then(() => {
-      return hapi.inject({
+      return context.strut.hapi.inject({
         method: 'PATCH',
-        url: `/api/${one.id}`,
+        url: `/api/${TestType.type}/${one.id}`,
         payload: JSON.stringify({ attributes: { name: 'grotato' } }),
       });
     })
@@ -85,20 +94,20 @@ describe('Base Plump Routes', () => {
   });
 
   it('D', () => {
-    const one = new TestType({ name: 'potato', otherName: '', extended: {} }, plump);
+    const one = new TestType({ name: 'potato', otherName: '', extended: {} }, context.plump);
     let id;
     return one.save()
-    .then(() => hapi.inject(`/api/${one.id}`))
+    .then(() => context.strut.hapi.inject(`/api/${TestType.type}/${one.id}`))
     .then((response) => {
       id = one.id;
       return one.get()
       .then((v) => expect(v).to.deep.equal(JSON.parse(response.payload)));
     }).then(() => {
-      return hapi.inject({
+      return context.strut.hapi.inject({
         method: 'DELETE',
-        url: `/api/${one.id}`,
+        url: `/api/${TestType.type}/${one.id}`,
       });
-    }).then(() => hapi.inject(`/api/${id}`))
+    }).then(() => context.strut.hapi.inject(`/api/${TestType.type}/${id}`))
     .then((v) => expect(v).to.have.property('statusCode', 404));
   });
 });

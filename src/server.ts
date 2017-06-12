@@ -20,9 +20,10 @@ export class StrutServer {
     this.hapi = new Hapi.Server();
   }
 
-  start() {
+  initialize() {
     return Promise.resolve()
     .then(() => {
+      this.hapi.connection({ port: this.config.apiPort });
       return Promise.all((this.config.models || this.plump.getTypes()).map((t) => {
         return this.hapi.register(
           new BaseController(this.plump, t).plugin as Hapi.PluginFunction<{}>,
@@ -38,6 +39,10 @@ export class StrutServer {
     .then(() => {
       this.io = SocketIO(this.hapi.listener);
     });
+  }
+
+  start() {
+    return this.hapi.start();
   }
 
 }

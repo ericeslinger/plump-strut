@@ -15,5 +15,6 @@ export declare class StrutServer {
     hapi: Hapi.Server;
     io: SocketIO.Server;
     constructor(plump: Plump, oracle: Oracle, config: StrutConfig);
-    start(): Promise<void>;
+    initialize(): Promise<void>;
+    start(): Promise<Error>;
 }
