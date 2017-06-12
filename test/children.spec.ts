@@ -60,7 +60,7 @@ describe('HasMany Plump Routes', () => {
     .then((response) => {
       expect(response).to.have.property('statusCode', 200);
       return one.get('relationships.children')
-      .then((v) => expect(v.relationships.children).to.deep.equal([{ id: 100 }]));
+      .then((v) => expect(v.relationships.children).to.deep.equal([{ type: TestType.type,  id: 100 }]));
     });
   });
 
@@ -69,7 +69,7 @@ describe('HasMany Plump Routes', () => {
     return one.save()
     .then(() => one.add('children', { id: 100 }).save())
     .then(() => one.get('relationships.children'))
-    .then((v) => expect(v.relationships.children).to.deep.equal([{ id: 100 }]))
+    .then((v) => expect(v.relationships.children).to.deep.equal([{ type: TestType.type, id: 100 }]))
     .then(() => {
       return hapi.inject({
         method: 'GET',
@@ -78,7 +78,7 @@ describe('HasMany Plump Routes', () => {
     })
     .then((response) => {
       expect(response).to.have.property('statusCode', 200);
-      expect(JSON.parse(response.payload).relationships.children).to.deep.equal([{ id: 100 }]);
+      expect(JSON.parse(response.payload).relationships.children).to.deep.equal([{ type: TestType.type, id: 100 }]);
     });
   });
 
@@ -88,7 +88,7 @@ describe('HasMany Plump Routes', () => {
     .then(() => one.add('valenceChildren', { id: 100, meta: { perm: 2 } }).save())
     .then(() => one.get('relationships.valenceChildren'))
     .then((v) => {
-      expect(v.relationships.valenceChildren).to.deep.equal([{ id: 100, meta: { perm: 2 } }]);
+      expect(v.relationships.valenceChildren).to.deep.equal([{ type: TestType.type, id: 100, meta: { perm: 2 } }]);
     })
     .then(() => {
       return hapi.inject({
@@ -101,7 +101,7 @@ describe('HasMany Plump Routes', () => {
       expect(response).to.have.property('statusCode', 200);
       return plump.find({ type: 'tests', id: one.id }).get('relationships.valenceChildren');
     })
-    .then((v) => expect(v.relationships.valenceChildren).to.deep.equal([{ id: 100, meta: { perm: 3 } }]));
+    .then((v) => expect(v.relationships.valenceChildren).to.deep.equal([{ type: TestType.type, id: 100, meta: { perm: 3 } }]));
   });
 
   it('D', () => {
@@ -109,7 +109,7 @@ describe('HasMany Plump Routes', () => {
     return one.save()
     .then(() => one.add('children', { id: 100 }).save())
     .then(() => one.get('relationships.children'))
-    .then((v) => expect(v.relationships.children).to.deep.equal([{ id: 100 }]))
+    .then((v) => expect(v.relationships.children).to.deep.equal([{ type: TestType.type, id: 100 }]))
     .then(() => {
       return hapi.inject({
         method: 'DELETE',

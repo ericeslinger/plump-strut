@@ -1,0 +1,7 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+function dispatch(s) {
+}
+exports.dispatch = dispatch;
+
+//# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy9zb2NrZXQvY2hhbm5lbHMudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFFQSxrQkFBeUIsQ0FBa0I7QUFFM0MsQ0FBQztBQUZELDRCQUVDIiwiZmlsZSI6InNvY2tldC9jaGFubmVscy5qcyIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCAqIGFzIFNvY2tldElPIGZyb20gJ3NvY2tldC5pbyc7XG5cbmV4cG9ydCBmdW5jdGlvbiBkaXNwYXRjaChzOiBTb2NrZXRJTy5TZXJ2ZXIpIHtcblxufVxuIl19
