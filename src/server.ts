@@ -2,6 +2,7 @@ import * as Hapi from 'hapi';
 import * as SocketIO from 'socket.io';
 import { Plump, Model, Oracle } from 'plump';
 import { BaseController } from './base';
+import { dispatch } from './socket/channels';
 
 export interface StrutConfig {
   models?: typeof Model[];
@@ -38,6 +39,7 @@ export class StrutServer {
     })
     .then(() => {
       this.io = SocketIO(this.hapi.listener);
+      dispatch(this);
     });
   }
 

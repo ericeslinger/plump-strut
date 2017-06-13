@@ -1,18 +1,22 @@
-export interface ChannelMessage {
+import { StrutServer } from '../index';
+export interface SingletonRequest {
+    responseKey: string;
+}
+export interface ChannelRequest {
     request: string;
 }
-export interface ListAuthenticationChannelMessage extends ChannelMessage {
+export interface ListAuthenticationRequest extends ChannelRequest, SingletonRequest {
     request: 'list';
 }
-export interface TestKeyAuthenticationChannelMessage extends ChannelMessage {
+export interface TestKeyAuthenticationRequest extends ChannelRequest, SingletonRequest {
     request: 'testkey';
     key: string;
 }
-export interface StartAuthenticationChannelMessage extends ChannelMessage {
+export interface StartAuthenticationRequest extends ChannelRequest, SingletonRequest {
     request: 'startauth';
     nonce: string;
 }
-export declare type AuthenticationChannelMessage = ListAuthenticationChannelMessage | TestKeyAuthenticationChannelMessage | StartAuthenticationChannelMessage;
+export declare type AuthenticationRequest = ListAuthenticationRequest | TestKeyAuthenticationRequest | StartAuthenticationRequest;
 export interface Response {
     response: string;
 }
@@ -27,4 +31,7 @@ export interface TestResponse extends Response {
     response: 'testkey';
     auth: boolean;
 }
-export declare type AuthenticationChannelResponse = InvalidRequestResponse | ListResponse | TestResponse;
+export interface RequestHandler {
+    (m: ChannelRequest, s: StrutServer): Promise<Response>;
+}
+export declare type AuthenticationResponse = InvalidRequestResponse | ListResponse | TestResponse;

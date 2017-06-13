@@ -1,2 +1,2 @@
-import * as SocketIO from 'socket.io';
-export declare function dispatch(s: SocketIO.Server): void;
+import { StrutServer } from '../index';
+export declare function dispatch(s: StrutServer): void;

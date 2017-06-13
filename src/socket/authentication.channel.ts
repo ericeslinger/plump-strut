@@ -1,11 +1,15 @@
 import {
-  AuthenticationChannelMessage,
-  AuthenticationChannelResponse,
+  AuthenticationRequest,
+  AuthenticationResponse,
   Response,
 } from './messageInterfaces';
 import { StrutServer } from '../server';
+import * as SocketIO from 'socket.io';
 
-export function dispatch(msg: AuthenticationChannelMessage, server: StrutServer): Promise<AuthenticationChannelResponse> {
+export function dispatch(
+  msg: AuthenticationRequest,
+  server: StrutServer
+): Promise<AuthenticationResponse> {
   if (msg.request === 'list') {
     return Promise.resolve({
       response: msg.request,
