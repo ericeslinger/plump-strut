@@ -3,6 +3,7 @@ import * as SocketIO from 'socket.io';
 import { Plump, Model, Oracle } from 'plump';
 import { BaseController } from './base';
 import { dispatch } from './socket/channels';
+import { plugin as authenticationPlugin } from './authentication';
 
 export interface StrutConfig {
   models?: typeof Model[];
@@ -10,6 +11,7 @@ export interface StrutConfig {
   apiProtocol: 'http' | 'https';
   authTypes: string[];
   apiPort: number;
+  authRoot: string;
 }
 
 export class StrutServer {
@@ -25,13 +27,23 @@ export class StrutServer {
     return Promise.resolve()
     .then(() => {
       this.hapi.connection({ port: this.config.apiPort });
+      this.hapi.state('authNonce', {
+        ttl: null,
+        isSecure: true,
+        isHttpOnly: true,
+        encoding: 'base64json',
+        clearInvalid: false, // remove invalid cookies
+        strictHeader: true // don't allow violations of RFC 6265
+      });
       return Promise.all((this.config.models || this.plump.getTypes()).map((t) => {
         return this.hapi.register(
           new BaseController(this.plump, t).plugin as Hapi.PluginFunction<{}>,
             { routes: { prefix: `${this.config.apiRoot}/${t.type}` } }
         );
       }));
-    }).then(() => {
+    })
+    .then(() => this.hapi.register(authenticationPlugin as Hapi.PluginFunction<{}>, { routes: { prefix: this.config.authRoot } }))
+    .then(() => {
       this.hapi.ext('onPreAuth', (request, reply) => {
         request.connection.info.protocol = this.config.apiProtocol;
         return reply.continue();
