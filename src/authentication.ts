@@ -4,7 +4,7 @@ import * as Bell from 'bell';
 
 export interface AuthenticationType {
   name: string;
-  handler: Hapi.RouteHandler;
+  handler: (r: Hapi.Request) => Promise<string>;
   strategy: {
     provider: string;
     password: string;
@@ -18,15 +18,20 @@ export interface AuthenticationType {
   };
 }
 
-export class AuthenticationModule { }
-
 function routeGen(options: AuthenticationType) {
   return (server) => {
     server.auth.strategy(options.name, 'bell', options.strategy);
     server.route({
       method: ['GET', 'POST'],
       path: options.name,
-      handler: options.handler,
+      handler: (request: Hapi.Request, reply: Hapi.Base_Reply) => {
+        return options.handler(request)
+        .then((s: string) => {
+          reply(s)
+          .type('text/html')
+          .unstate('authNonce');
+        });
+      },
       config: {
         auth: options.name,
       }
@@ -36,7 +41,14 @@ function routeGen(options: AuthenticationType) {
 
 function cookieAndDispatch(request: Hapi.Request, reply: Hapi.Base_Reply) {
   console.log(request.query);
-  reply(200).state('authNonce', { nonce: request.query['nonce'] });
+  reply(`
+    <html>
+      <head><meta http-equiv="refresh" content="5; url=${request.query['method']}" /></head>
+      <body>REDIRECTING ${request.query['method']}</body>
+    </html>
+  `)
+  .type('text/html')
+  .state('authNonce', { nonce: request.query['nonce'] });
 }
 
 const cookieRoute: Hapi.RouteConfiguration = {
@@ -53,19 +65,15 @@ const cookieRoute: Hapi.RouteConfiguration = {
   },
 };
 
-const authRoute: Hapi.RouteConfiguration = {
-  method: ['GET', 'POST'],
-  path: null,
-  config: {
-    auth: null,
-  }
-};
-
-export const plugin: Hapi.PluginFunction<{ version: string, name: string }> = function(server, _, next) {
-  server.route(cookieRoute);
-  next();
-};
-plugin.attributes = {
-  version: '1.0.0',
-  name: 'authentication',
-};
+export function configureAuth(types: AuthenticationType[], server: Hapi.Server) {
+  const plugin: Hapi.PluginFunction<{ version: string, name: string }> = function(s, _, next) {
+    s.route(cookieRoute);
+    types.forEach(t => routeGen(t)(server));
+    next();
+  };
+  plugin.attributes = {
+    version: '1.0.0',
+    name: 'authentication',
+  };
+  return plugin;
+}
