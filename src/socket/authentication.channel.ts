@@ -13,7 +13,7 @@ export function dispatch(
   if (msg.request === 'list') {
     return Promise.resolve({
       response: msg.request,
-      types: server.config.authTypes,
+      types: server.config.authTypes.map(v => v.name),
     });
   } else if (msg.request === 'testkey') {
     return server.oracle.keyService.test(msg.key)

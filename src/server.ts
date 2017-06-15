@@ -1,15 +1,16 @@
 import * as Hapi from 'hapi';
 import * as SocketIO from 'socket.io';
+import * as Bell from 'bell';
 import { Plump, Model, Oracle } from 'plump';
 import { BaseController } from './base';
 import { dispatch } from './socket/channels';
-import { plugin as authenticationPlugin } from './authentication';
+import { configureAuth, AuthenticationType } from './authentication';
 
 export interface StrutConfig {
   models?: typeof Model[];
   apiRoot: string;
   apiProtocol: 'http' | 'https';
-  authTypes: string[];
+  authTypes: AuthenticationType[];
   apiPort: number;
   authRoot: string;
 }
@@ -27,6 +28,8 @@ export class StrutServer {
     return Promise.resolve()
     .then(() => {
       this.hapi.connection({ port: this.config.apiPort });
+      return this.hapi.register(Bell);
+    }).then(() => {
       this.hapi.state('authNonce', {
         ttl: null,
         isSecure: true,
@@ -42,7 +45,7 @@ export class StrutServer {
         );
       }));
     })
-    .then(() => this.hapi.register(authenticationPlugin as Hapi.PluginFunction<{}>, { routes: { prefix: this.config.authRoot } }))
+    .then(() => this.hapi.register(configureAuth(this.config) as Hapi.PluginFunction<{}>, { routes: { prefix: this.config.authRoot } }))
     .then(() => {
       this.hapi.ext('onPreAuth', (request, reply) => {
         request.connection.info.protocol = this.config.apiProtocol;

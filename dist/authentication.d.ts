@@ -1,7 +1,8 @@
 import * as Hapi from 'hapi';
+import { StrutConfig } from './server';
 export interface AuthenticationType {
     name: string;
-    handler: Hapi.RouteHandler;
+    handler: (r: Hapi.Request) => Promise<string>;
     strategy: {
         provider: string;
         password: string;
@@ -14,9 +15,7 @@ export interface AuthenticationType {
         providerParams?: any;
     };
 }
-export declare class AuthenticationModule {
-}
-export declare const plugin: Hapi.PluginFunction<{
+export declare function configureAuth(c: StrutConfig): Hapi.PluginFunction<{
     version: string;
     name: string;
 }>;

@@ -5,3 +5,6 @@ export {
 export {
   StrutServer, StrutConfig
 } from './server';
+export {
+  AuthenticationType
+} from './authentication';

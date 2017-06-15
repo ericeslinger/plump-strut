@@ -1,6 +1,7 @@
 import * as Joi from 'joi';
 import * as Hapi from 'hapi';
 import * as Bell from 'bell';
+import { StrutConfig } from './server';
 
 export interface AuthenticationType {
   name: string;
@@ -18,12 +19,12 @@ export interface AuthenticationType {
   };
 }
 
-function routeGen(options: AuthenticationType) {
+function routeGen(options: AuthenticationType, c: StrutConfig) {
   return (server) => {
     server.auth.strategy(options.name, 'bell', options.strategy);
     server.route({
       method: ['GET', 'POST'],
-      path: options.name,
+      path: `/${options.name}`,
       handler: (request: Hapi.Request, reply: Hapi.Base_Reply) => {
         return options.handler(request)
         .then((s: string) => {
@@ -34,41 +35,40 @@ function routeGen(options: AuthenticationType) {
       },
       config: {
         auth: options.name,
+        state: {
+          parse: true,
+        }
       }
     });
   };
 }
 
-function cookieAndDispatch(request: Hapi.Request, reply: Hapi.Base_Reply) {
-  console.log(request.query);
-  reply(`
-    <html>
-      <head><meta http-equiv="refresh" content="5; url=${request.query['method']}" /></head>
-      <body>REDIRECTING ${request.query['method']}</body>
-    </html>
-  `)
-  .type('text/html')
-  .state('authNonce', { nonce: request.query['nonce'] });
-}
-
-const cookieRoute: Hapi.RouteConfiguration = {
-  method: 'GET',
-  path: '',
-  handler: cookieAndDispatch,
-  config: {
-    validate: {
-      query: {
-        method: Joi.string().required(),
-        nonce: Joi.string().required(),
-      }
-    }
-  },
-};
-
-export function configureAuth(types: AuthenticationType[], server: Hapi.Server) {
+export function configureAuth(c: StrutConfig) {
   const plugin: Hapi.PluginFunction<{ version: string, name: string }> = function(s, _, next) {
-    s.route(cookieRoute);
-    types.forEach(t => routeGen(t)(server));
+
+    s.route({
+      method: 'GET',
+      path: '',
+      handler: (request: Hapi.Request, reply: Hapi.Base_Reply) => {
+        reply(`
+          <html>
+            <head><meta http-equiv="refresh" content="5; url=${c.authRoot}/${request.query['method']}" /></head>
+            <body>REDIRECTING ${request.query['method']}</body>
+          </html>
+        `)
+        .type('text/html')
+        .state('authNonce', { nonce: request.query['nonce'] });
+      },
+      config: {
+        validate: {
+          query: {
+            method: Joi.string().required(),
+            nonce: Joi.string().required(),
+          }
+        }
+      },
+    });
+    c.authTypes.forEach(t => routeGen(t, c)(s));
     next();
   };
   plugin.attributes = {
