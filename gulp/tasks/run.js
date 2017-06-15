@@ -8,7 +8,6 @@ function run(done) {
     apiRoot: '/api',
     apiPort: 4000,
     authRoot: '/auth',
-    authTypes: [],
   });
   srv.initialize().then(() => srv.start());
 }

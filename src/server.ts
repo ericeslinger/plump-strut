@@ -5,6 +5,7 @@ import { Plump, Model, Oracle } from 'plump';
 import { BaseController } from './base';
 import { dispatch } from './socket/channels';
 import { configureAuth, AuthenticationType } from './authentication';
+import ulid from 'ulid';
 
 export interface StrutConfig {
   models?: typeof Model[];
@@ -15,13 +16,22 @@ export interface StrutConfig {
   authRoot: string;
 }
 
+const defaultSettings: StrutConfig = {
+  apiRoot: '/api',
+  authTypes: [],
+  apiPort: 3000,
+  authRoot: '/auth',
+  apiProtocol: 'https',
+};
+
 export class StrutServer {
   public hapi: Hapi.Server;
   public io: SocketIO.Server;
+  public config: StrutConfig;
 
-
-  constructor(public plump: Plump, public oracle: Oracle, public config: StrutConfig) {
+  constructor(public plump: Plump, public oracle: Oracle, conf: Partial<StrutConfig>) {
     this.hapi = new Hapi.Server();
+    this.config = Object.assign({}, defaultSettings, conf);
   }
 
   initialize() {
@@ -32,8 +42,8 @@ export class StrutServer {
     }).then(() => {
       this.hapi.state('authNonce', {
         ttl: null,
-        isSecure: true,
-        isHttpOnly: true,
+        isSecure: false,
+        isHttpOnly: false,
         encoding: 'base64json',
         clearInvalid: false, // remove invalid cookies
         strictHeader: true // don't allow violations of RFC 6265
@@ -61,5 +71,6 @@ export class StrutServer {
   start() {
     return this.hapi.start();
   }
+
 
 }

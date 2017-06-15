@@ -8,7 +8,7 @@ export interface AuthenticationType {
   handler: (r: Hapi.Request) => Promise<string>;
   strategy: {
     provider: string;
-    password: string;
+    password?: string;
     cookie: string;
     scope: string[];
     clientId: string;
@@ -17,11 +17,25 @@ export interface AuthenticationType {
     forceHttps: boolean;
     providerParams?: any,
   };
+  nonceCookie?: Hapi.ServerStateCookieConfiguationObject;
 }
 
 function routeGen(options: AuthenticationType, c: StrutConfig) {
+  const cookieOptions: Hapi.ServerStateCookieConfiguationObject = Object.assign(
+    {}, {
+      ttl: null,
+      isSecure: true,
+      isHttpOnly: true,
+      encoding: 'base64json',
+      isSameSite: false,
+      clearInvalid: false, // remove invalid cookies
+      strictHeader: true, // don't allow violations of RFC 6265
+    },
+    options.nonceCookie
+  );
   return (server) => {
     server.auth.strategy(options.name, 'bell', options.strategy);
+    server.state(`${options.name}-nonce`, cookieOptions);
     server.route({
       method: ['GET', 'POST'],
       path: `/${options.name}`,
@@ -30,7 +44,7 @@ function routeGen(options: AuthenticationType, c: StrutConfig) {
         .then((s: string) => {
           reply(s)
           .type('text/html')
-          .unstate('authNonce');
+          .unstate(`${options.name}-nonce`);
         });
       },
       config: {
@@ -45,7 +59,6 @@ function routeGen(options: AuthenticationType, c: StrutConfig) {
 
 export function configureAuth(c: StrutConfig) {
   const plugin: Hapi.PluginFunction<{ version: string, name: string }> = function(s, _, next) {
-
     s.route({
       method: 'GET',
       path: '',
@@ -53,11 +66,11 @@ export function configureAuth(c: StrutConfig) {
         reply(`
           <html>
             <head><meta http-equiv="refresh" content="5; url=${c.authRoot}/${request.query['method']}" /></head>
-            <body>REDIRECTING ${request.query['method']}</body>
+            <body>REDIRECTING ${request.query['method']} / ${request.query['nonce']}</body>
           </html>
         `)
         .type('text/html')
-        .state('authNonce', { nonce: request.query['nonce'] });
+        .state(`${request.query['method']}-nonce`, { nonce: request.query['nonce'] });
       },
       config: {
         validate: {

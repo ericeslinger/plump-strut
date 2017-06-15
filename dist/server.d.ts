@@ -13,10 +13,10 @@ export interface StrutConfig {
 export declare class StrutServer {
     plump: Plump;
     oracle: Oracle;
-    config: StrutConfig;
     hapi: Hapi.Server;
     io: SocketIO.Server;
-    constructor(plump: Plump, oracle: Oracle, config: StrutConfig);
+    config: StrutConfig;
+    constructor(plump: Plump, oracle: Oracle, conf: Partial<StrutConfig>);
     initialize(): Promise<void>;
     start(): Promise<Error>;
 }

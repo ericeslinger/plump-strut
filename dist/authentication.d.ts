@@ -5,7 +5,7 @@ export interface AuthenticationType {
     handler: (r: Hapi.Request) => Promise<string>;
     strategy: {
         provider: string;
-        password: string;
+        password?: string;
         cookie: string;
         scope: string[];
         clientId: string;
@@ -14,6 +14,7 @@ export interface AuthenticationType {
         forceHttps: boolean;
         providerParams?: any;
     };
+    nonceCookie?: Hapi.ServerStateCookieConfiguationObject;
 }
 export declare function configureAuth(c: StrutConfig): Hapi.PluginFunction<{
     version: string;
