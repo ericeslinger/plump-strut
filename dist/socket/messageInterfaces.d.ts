@@ -1,12 +1,11 @@
 import { StrutServer } from '../index';
+import { AuthenticationType } from '../authentication';
 export interface SingletonRequest {
     responseKey: string;
 }
 export interface ChannelRequest {
     request: string;
-}
-export interface ListAuthenticationRequest extends ChannelRequest, SingletonRequest {
-    request: 'list';
+    client: SocketIO.Socket;
 }
 export interface TestKeyAuthenticationRequest extends ChannelRequest, SingletonRequest {
     request: 'testkey';
@@ -16,16 +15,16 @@ export interface StartAuthenticationRequest extends ChannelRequest, SingletonReq
     request: 'startauth';
     nonce: string;
 }
-export declare type AuthenticationRequest = ListAuthenticationRequest | TestKeyAuthenticationRequest | StartAuthenticationRequest;
+export declare type AuthenticationRequest = TestKeyAuthenticationRequest | StartAuthenticationRequest;
 export interface Response {
     response: string;
 }
 export interface InvalidRequestResponse extends Response {
     response: 'invalidRequest';
 }
-export interface ListResponse extends Response {
-    response: 'list';
-    types: string[];
+export interface StartResponse extends Response {
+    response: 'startauth';
+    types: AuthenticationType[];
 }
 export interface TestResponse extends Response {
     response: 'testkey';
@@ -34,4 +33,4 @@ export interface TestResponse extends Response {
 export interface RequestHandler {
     (m: ChannelRequest, s: StrutServer): Promise<Response>;
 }
-export declare type AuthenticationResponse = InvalidRequestResponse | ListResponse | TestResponse;
+export declare type AuthenticationResponse = InvalidRequestResponse | StartResponse | TestResponse;

@@ -11,9 +11,17 @@ export interface AuthenticationResponse {
 export interface AuthenticationHandler {
   (r: Hapi.Request): Promise<AuthenticationResponse>;
 }
+
 export interface AuthenticationType {
   name: string;
+  url: string;
+  iconUrl?: string;
+}
+
+export interface AuthenticationStrategy {
+  name: string;
   handler: AuthenticationHandler;
+  iconUrl?: string;
   strategy: {
     provider: string;
     password?: string;
@@ -28,7 +36,7 @@ export interface AuthenticationType {
   nonceCookie?: Hapi.ServerStateCookieConfiguationObject;
 }
 
-function routeGen(options: AuthenticationType, strut: StrutServer) {
+function routeGen(options: AuthenticationStrategy, strut: StrutServer) {
   const cookieOptions: Hapi.ServerStateCookieConfiguationObject = Object.assign(
     {},
     {
@@ -38,9 +46,9 @@ function routeGen(options: AuthenticationType, strut: StrutServer) {
       encoding: 'base64json',
       isSameSite: false,
       clearInvalid: false, // remove invalid cookies
-      strictHeader: true, // don't allow violations of RFC 6265
+      strictHeader: true // don't allow violations of RFC 6265
     },
-    options.nonceCookie,
+    options.nonceCookie
   );
   const routeHandler: Hapi.RouteHandler = (request, reply) => {
     return options.handler(request).then(r => {
@@ -48,7 +56,7 @@ function routeGen(options: AuthenticationType, strut: StrutServer) {
         .to(request.state[`${options.name}-nonce`].nonce)
         .emit(request.state[`${options.name}-nonce`].nonce, {
           status: 'success',
-          token: r.token,
+          token: r.token
         });
       reply(r.response).type('text/html').unstate(`${options.name}-nonce`);
     });
@@ -63,9 +71,9 @@ function routeGen(options: AuthenticationType, strut: StrutServer) {
       config: {
         auth: options.name,
         state: {
-          parse: true,
-        },
-      },
+          parse: true
+        }
+      }
     });
   };
 }
@@ -88,28 +96,28 @@ export function configureAuth(strut: StrutServer) {
             'nonce'
           ]}</body>
           </html>
-        `,
+        `
         )
           .type('text/html')
           .state(`${request.query['method']}-nonce`, {
-            nonce: request.query['nonce'],
+            nonce: request.query['nonce']
           });
       },
       config: {
         validate: {
           query: {
             method: Joi.string().required(),
-            nonce: Joi.string().required(),
-          },
-        },
-      },
+            nonce: Joi.string().required()
+          }
+        }
+      }
     });
     strut.config.authTypes.forEach(t => routeGen(t, strut)(s));
     next();
   };
   plugin.attributes = {
     version: '1.0.0',
-    name: 'authentication',
+    name: 'authentication'
   };
   return plugin;
 }

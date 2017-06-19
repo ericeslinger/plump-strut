@@ -1,12 +1,11 @@
 import * as Hapi from 'hapi';
-import * as SocketIO from 'socket.io';
 import { Plump, Model, Oracle } from 'plump';
-import { AuthenticationType } from './authentication';
+import { AuthenticationStrategy } from './authentication';
 export interface StrutConfig {
     models?: typeof Model[];
     apiRoot: string;
     apiProtocol: 'http' | 'https';
-    authTypes: AuthenticationType[];
+    authTypes: AuthenticationStrategy[];
     apiPort: number;
     authRoot: string;
 }
@@ -18,5 +17,6 @@ export declare class StrutServer {
     config: StrutConfig;
     constructor(plump: Plump, oracle: Oracle, conf: Partial<StrutConfig>);
     initialize(): Promise<void>;
+    baseUrl(): string;
     start(): Promise<Error>;
 }

@@ -1,8 +1,21 @@
 import * as Hapi from 'hapi';
-import { StrutConfig } from './server';
+import { StrutServer } from './server';
+export interface AuthenticationResponse {
+    response: string;
+    token: string;
+}
+export interface AuthenticationHandler {
+    (r: Hapi.Request): Promise<AuthenticationResponse>;
+}
 export interface AuthenticationType {
     name: string;
-    handler: (r: Hapi.Request) => Promise<string>;
+    url: string;
+    iconUrl?: string;
+}
+export interface AuthenticationStrategy {
+    name: string;
+    handler: AuthenticationHandler;
+    iconUrl?: string;
     strategy: {
         provider: string;
         password?: string;
@@ -16,7 +29,7 @@ export interface AuthenticationType {
     };
     nonceCookie?: Hapi.ServerStateCookieConfiguationObject;
 }
-export declare function configureAuth(c: StrutConfig): Hapi.PluginFunction<{
+export declare function configureAuth(strut: StrutServer): Hapi.PluginFunction<{
     version: string;
     name: string;
 }>;

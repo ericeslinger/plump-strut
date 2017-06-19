@@ -1,5 +1,6 @@
 import { StrutServer } from '../index';
 import * as SocketIO from 'socket.io';
+import { AuthenticationType } from '../authentication';
 
 export interface SingletonRequest {
   responseKey: string;
@@ -34,7 +35,7 @@ export interface InvalidRequestResponse extends Response {
 
 export interface StartResponse extends Response {
   response: 'startauth';
-  types: string[];
+  types: AuthenticationType[];
 }
 
 export interface TestResponse extends Response {
