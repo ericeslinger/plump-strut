@@ -29,48 +29,58 @@ export class StrutServer {
   public io: SocketIO.Server;
   public config: StrutConfig;
 
-  constructor(public plump: Plump, public oracle: Oracle, conf: Partial<StrutConfig>) {
+  constructor(
+    public plump: Plump,
+    public oracle: Oracle,
+    conf: Partial<StrutConfig>,
+  ) {
     this.hapi = new Hapi.Server();
     this.config = Object.assign({}, defaultSettings, conf);
   }
 
   initialize() {
     return Promise.resolve()
-    .then(() => {
-      this.hapi.connection({ port: this.config.apiPort });
-      return this.hapi.register(Bell);
-    }).then(() => {
-      this.hapi.state('authNonce', {
-        ttl: null,
-        isSecure: false,
-        isHttpOnly: false,
-        encoding: 'base64json',
-        clearInvalid: false, // remove invalid cookies
-        strictHeader: true // don't allow violations of RFC 6265
-      });
-      return Promise.all((this.config.models || this.plump.getTypes()).map((t) => {
-        return this.hapi.register(
-          new BaseController(this.plump, t).plugin as Hapi.PluginFunction<{}>,
-            { routes: { prefix: `${this.config.apiRoot}/${t.type}` } }
+      .then(() => {
+        this.hapi.connection({ port: this.config.apiPort });
+        return this.hapi.register(Bell);
+      })
+      .then(() => {
+        this.hapi.state('authNonce', {
+          ttl: null,
+          isSecure: false,
+          isHttpOnly: false,
+          encoding: 'base64json',
+          clearInvalid: false, // remove invalid cookies
+          strictHeader: true, // don't allow violations of RFC 6265
+        });
+        return Promise.all(
+          (this.config.models || this.plump.getTypes()).map(t => {
+            return this.hapi.register(
+              new BaseController(this.plump, t)
+                .plugin as Hapi.PluginFunction<{}>,
+              { routes: { prefix: `${this.config.apiRoot}/${t.type}` } },
+            );
+          }),
         );
-      }));
-    })
-    .then(() => this.hapi.register(configureAuth(this.config) as Hapi.PluginFunction<{}>, { routes: { prefix: this.config.authRoot } }))
-    .then(() => {
-      this.hapi.ext('onPreAuth', (request, reply) => {
-        request.connection.info.protocol = this.config.apiProtocol;
-        return reply.continue();
+      })
+      .then(() =>
+        this.hapi.register(configureAuth(this) as Hapi.PluginFunction<{}>, {
+          routes: { prefix: this.config.authRoot },
+        }),
+      )
+      .then(() => {
+        this.hapi.ext('onPreAuth', (request, reply) => {
+          request.connection.info.protocol = this.config.apiProtocol;
+          return reply.continue();
+        });
+      })
+      .then(() => {
+        this.io = SocketIO(this.hapi.listener);
+        dispatch(this);
       });
-    })
-    .then(() => {
-      this.io = SocketIO(this.hapi.listener);
-      dispatch(this);
-    });
   }
 
   start() {
     return this.hapi.start();
   }
-
-
 }

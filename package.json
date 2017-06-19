@@ -30,6 +30,7 @@
     "@types/joi": "^10.3.2",
     "@types/mocha": "^2.2.41",
     "@types/node": "^7.0.22",
+    "@types/socket.io": "^1.4.29",
     "chai": "^4.0.0",
     "del": "^2.2.2",
     "gulp": "gulpjs/gulp.git#4.0",
