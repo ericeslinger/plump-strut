@@ -7,6 +7,7 @@ export interface StrutConfig {
     apiProtocol: 'http' | 'https';
     authTypes: AuthenticationStrategy[];
     apiPort: number;
+    hostName: string;
     authRoot: string;
 }
 export declare class StrutServer {

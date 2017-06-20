@@ -9,7 +9,7 @@ export interface AuthenticationResponse {
 }
 
 export interface AuthenticationHandler {
-  (r: Hapi.Request): Promise<AuthenticationResponse>;
+  (r: Hapi.Request, strut: StrutServer): Promise<AuthenticationResponse>;
 }
 
 export interface AuthenticationType {
@@ -46,17 +46,17 @@ function routeGen(options: AuthenticationStrategy, strut: StrutServer) {
       encoding: 'base64json',
       isSameSite: false,
       clearInvalid: false, // remove invalid cookies
-      strictHeader: true // don't allow violations of RFC 6265
+      strictHeader: true, // don't allow violations of RFC 6265
     },
-    options.nonceCookie
+    options.nonceCookie,
   );
   const routeHandler: Hapi.RouteHandler = (request, reply) => {
-    return options.handler(request).then(r => {
+    return options.handler(request, strut).then(r => {
       strut.io
         .to(request.state[`${options.name}-nonce`].nonce)
         .emit(request.state[`${options.name}-nonce`].nonce, {
           status: 'success',
-          token: r.token
+          token: r.token,
         });
       reply(r.response).type('text/html').unstate(`${options.name}-nonce`);
     });
@@ -71,9 +71,9 @@ function routeGen(options: AuthenticationStrategy, strut: StrutServer) {
       config: {
         auth: options.name,
         state: {
-          parse: true
-        }
-      }
+          parse: true,
+        },
+      },
     });
   };
 }
@@ -96,28 +96,28 @@ export function configureAuth(strut: StrutServer) {
             'nonce'
           ]}</body>
           </html>
-        `
+        `,
         )
           .type('text/html')
           .state(`${request.query['method']}-nonce`, {
-            nonce: request.query['nonce']
+            nonce: request.query['nonce'],
           });
       },
       config: {
         validate: {
           query: {
             method: Joi.string().required(),
-            nonce: Joi.string().required()
-          }
-        }
-      }
+            nonce: Joi.string().required(),
+          },
+        },
+      },
     });
     strut.config.authTypes.forEach(t => routeGen(t, strut)(s));
     next();
   };
   plugin.attributes = {
     version: '1.0.0',
-    name: 'authentication'
+    name: 'authentication',
   };
   return plugin;
 }

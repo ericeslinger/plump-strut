@@ -5,7 +5,7 @@ export interface AuthenticationResponse {
     token: string;
 }
 export interface AuthenticationHandler {
-    (r: Hapi.Request): Promise<AuthenticationResponse>;
+    (r: Hapi.Request, strut: StrutServer): Promise<AuthenticationResponse>;
 }
 export interface AuthenticationType {
     name: string;
