@@ -46,7 +46,11 @@ export class StrutServer {
     this.config = mergeOptions({}, defaultSettings, conf);
   }
 
-  initialize() {
+  preRoute() {
+    return Promise.resolve();
+  }
+
+  preInit() {
     return Promise.resolve()
       .then(() => {
         this.services.hapi.connection({ port: this.config.apiPort });
@@ -61,6 +65,13 @@ export class StrutServer {
           clearInvalid: false, // remove invalid cookies
           strictHeader: true, // don't allow violations of RFC 6265
         });
+      });
+  }
+
+  initialize() {
+    return this.preInit()
+      .then(() => this.preRoute())
+      .then(() => {
         return Promise.all(
           (this.config.models || this.services.plump.getTypes()).map(t => {
             return this.services.hapi.register(

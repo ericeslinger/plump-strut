@@ -22,6 +22,8 @@ export declare class StrutServer {
     config: StrutConfig;
     services: Partial<StrutServices>;
     constructor(plump: Plump, conf: Partial<StrutConfig>);
+    preRoute(): Promise<void>;
+    preInit(): Promise<void>;
     initialize(): Promise<void>;
     baseUrl(): string;
     start(): Promise<Error>;

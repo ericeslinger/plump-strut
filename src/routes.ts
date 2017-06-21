@@ -4,15 +4,15 @@ import * as Hapi from 'hapi';
 export interface RouteOptions {
   cors: Hapi.CorsConfigurationObject;
   authFor: {
-    read: string;
-    listChildren: string;
-    query: string;
-    create: string;
-    update: string;
-    delete: string;
-    addChild: string;
-    modifyChild: string;
-    removeChild: string;
+    read?: string;
+    listChildren?: string;
+    query?: string;
+    create?: string;
+    update?: string;
+    delete?: string;
+    addChild?: string;
+    modifyChild?: string;
+    removeChild?: string;
   };
 }
 
