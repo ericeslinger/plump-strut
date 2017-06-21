@@ -1,5 +1,20 @@
 import * as Joi from 'joi';
-export declare function createRoutes(opts?: any): {
+import * as Hapi from 'hapi';
+export interface RouteOptions {
+    cors: Hapi.CorsConfigurationObject;
+    authFor: {
+        read?: string;
+        listChildren?: string;
+        query?: string;
+        create?: string;
+        update?: string;
+        delete?: string;
+        addChild?: string;
+        modifyChild?: string;
+        removeChild?: string;
+    };
+}
+export declare function createRoutes(opts?: Partial<RouteOptions>): {
     read: {
         validate: {
             params: {
@@ -9,7 +24,9 @@ export declare function createRoutes(opts?: any): {
         hapi: {
             method: string;
             path: string;
-            config: {};
+            config: {
+                cors: Hapi.CorsConfigurationObject;
+            };
         };
     };
     listChildren: {
@@ -22,14 +39,18 @@ export declare function createRoutes(opts?: any): {
         hapi: {
             method: string;
             path: string;
-            config: {};
+            config: {
+                cors: Hapi.CorsConfigurationObject;
+            };
         };
     };
     query: {
         hapi: {
             method: string;
             path: string;
-            config: {};
+            config: {
+                cors: Hapi.CorsConfigurationObject;
+            };
         };
     };
     create: {
@@ -40,6 +61,7 @@ export declare function createRoutes(opts?: any): {
             method: string;
             path: string;
             config: {
+                cors: Hapi.CorsConfigurationObject;
                 payload: {
                     output: string;
                     parse: boolean;
@@ -58,6 +80,7 @@ export declare function createRoutes(opts?: any): {
             method: string;
             path: string;
             config: {
+                cors: Hapi.CorsConfigurationObject;
                 payload: {
                     output: string;
                     parse: boolean;
@@ -74,7 +97,9 @@ export declare function createRoutes(opts?: any): {
         hapi: {
             method: string;
             path: string;
-            config: {};
+            config: {
+                cors: Hapi.CorsConfigurationObject;
+            };
         };
     };
     addChild: {
@@ -88,6 +113,7 @@ export declare function createRoutes(opts?: any): {
             method: string;
             path: string;
             config: {
+                cors: Hapi.CorsConfigurationObject;
                 payload: {
                     output: string;
                     parse: boolean;
@@ -107,6 +133,7 @@ export declare function createRoutes(opts?: any): {
             method: string;
             path: string;
             config: {
+                cors: Hapi.CorsConfigurationObject;
                 payload: {
                     output: string;
                     parse: boolean;
@@ -125,7 +152,9 @@ export declare function createRoutes(opts?: any): {
         hapi: {
             method: string;
             path: string;
-            config: {};
+            config: {
+                cors: Hapi.CorsConfigurationObject;
+            };
         };
     };
 };

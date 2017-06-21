@@ -6,13 +6,11 @@ import { Model, Plump, ModelData, ModelReference } from 'plump'; // tslint:disab
 // need to import ModelReference because some of the methods return them.
 import * as Hapi from 'hapi';
 
-const baseRoutes = createRoutes();
-
 function plugin(server, _, next) {
   server.route(
     this.constructor.routes
-    .map((method) => this.route(method, baseRoutes[method]))
-    .reduce((acc, curr) => acc.concat(curr), []) // routeRelationship returns an array
+      .map(method => this.route(method, this.routeInfo[method]))
+      .reduce((acc, curr) => acc.concat(curr), []), // routeRelationship returns an array
   );
   server.route(this.extraRoutes());
   next();
@@ -21,8 +19,8 @@ function plugin(server, _, next) {
 export interface RoutedItem<T extends ModelData> extends Hapi.Request {
   pre: {
     item: {
-      ref: Model<T>,
-      data: ModelData,
+      ref: Model<T>;
+      data: ModelData;
     };
   };
 }
@@ -35,11 +33,12 @@ export class BaseController {
   public plump: Plump;
   public model: typeof Model;
   public options;
+  public routeInfo;
   public plugin: {
     attributes: {
-      version: string,
-      name: string
-    }
+      version: string;
+      name: string;
+    };
   };
   static routes: string[];
   constructor(plump: Plump, model: typeof Model, options = {}) {
@@ -47,10 +46,15 @@ export class BaseController {
     this.model = model;
     this.options = Object.assign({}, { sideloads: [] }, options);
     this.plugin = plugin.bind(this);
-    this.plugin.attributes = Object.assign({}, {
-      version: '1.0.0',
-      name: this.model.type,
-    }, this.options.plugin);
+    this.routeInfo = createRoutes(options);
+    this.plugin.attributes = Object.assign(
+      {},
+      {
+        version: '1.0.0',
+        name: this.model.type,
+      },
+      this.options.plugin,
+    );
   }
 
   extraRoutes() {
@@ -58,7 +62,8 @@ export class BaseController {
   }
 
   read(): StrutHandler<ModelData> {
-    return (request: RoutedItem<ModelData>) => Promise.resolve(request.pre.item.data);
+    return (request: RoutedItem<ModelData>) =>
+      Promise.resolve(request.pre.item.data);
   }
 
   update(): StrutHandler<ModelData> {
@@ -74,7 +79,7 @@ export class BaseController {
   }
 
   create(): StrutHandler<ModelData> {
-    return (request) => {
+    return request => {
       return new this.model(request.payload.attributes, this.plump).save();
     };
   }
@@ -86,12 +91,15 @@ export class BaseController {
   }
 
   listChildren({ field }): StrutHandler<ModelData> {
-    return (request: RoutedItem<ModelData>) => request.pre.item.ref.get(`relationships.${field}`);
+    return (request: RoutedItem<ModelData>) =>
+      request.pre.item.ref.get(`relationships.${field}`);
   }
 
   removeChild({ field }) {
     return (request: RoutedItem<ModelData>) => {
-      return request.pre.item.ref.remove(field, { id: request.params.childId } ).save();
+      return request.pre.item.ref
+        .remove(field, { id: request.params.childId })
+        .save();
     };
   }
 
@@ -106,7 +114,7 @@ export class BaseController {
   }
 
   query() {
-    return (request) => {
+    return request => {
       return this.plump.query(request.query);
     };
   }
@@ -115,12 +123,13 @@ export class BaseController {
     const handler = this[method](options);
     return (request: Hapi.Request, reply: Hapi.Base_Reply) => {
       return handler(request)
-      .then((response) => {
-        reply(response).code(200);
-      }).catch((err) => {
-        console.log(err);
-        reply(Boom.badImplementation(err));
-      });
+        .then(response => {
+          reply(response).code(200);
+        })
+        .catch(err => {
+          console.log(err);
+          reply(Boom.badImplementation(err));
+        });
     };
   }
 
@@ -165,16 +174,19 @@ export class BaseController {
           if (schema.relationships[relName].type.extras) {
             const extras = schema.relationships[relName].type.extras;
 
-            for (const extra in extras) { // eslint-disable-line guard-for-in
+            for (const extra in extras) {
+              // eslint-disable-line guard-for-in
               const extraType = extras[extra].type;
               itemSchema.meta = itemSchema.meta || {};
               itemSchema.meta[extra] = Joi[extraType]();
             }
           }
-          retVal.relationships[relName] = Joi.array().items(Joi.object({
-            op: Joi.string().valid('add', 'modify', 'remove'),
-            data: itemSchema,
-          }));
+          retVal.relationships[relName] = Joi.array().items(
+            Joi.object({
+              op: Joi.string().valid('add', 'modify', 'remove'),
+              data: itemSchema,
+            }),
+          );
         });
         return retVal;
       }
@@ -188,21 +200,26 @@ export class BaseController {
     return {
       method: (request, reply) => {
         if (request.params && request.params.itemId) {
-          const item = this.plump.find({ type: this.model.type, id: request.params.itemId });
-          return item.get()
-          .then((thing) => {
-            if (thing) {
-              reply({
-                ref: item,
-                data: thing,
-              });
-            } else {
-              reply(Boom.notFound());
-            }
-          }).catch((err) => {
-            console.log(err);
-            reply(Boom.badImplementation(err));
+          const item = this.plump.find({
+            type: this.model.type,
+            id: request.params.itemId,
           });
+          return item
+            .get()
+            .then(thing => {
+              if (thing) {
+                reply({
+                  ref: item,
+                  data: thing,
+                });
+              } else {
+                reply(Boom.notFound());
+              }
+            })
+            .catch(err => {
+              console.log(err);
+              reply(Boom.badImplementation(err));
+            });
         } else {
           return reply(Boom.notFound());
         }
@@ -219,11 +236,11 @@ export class BaseController {
     }
   }
 
-
   // override approveHandler with whatever per-route
   // logic you want - reply with Boom.notAuthorized()
   // or any other value on non-approved status
-  approveHandler(method, opts) { // eslint-disable-line no-unused-vars
+  approveHandler(method, opts) {
+    // eslint-disable-line no-unused-vars
     return {
       method: (request, reply) => reply(true),
       assign: 'approve',
@@ -232,14 +249,10 @@ export class BaseController {
 
   routeRelationships(method, opts) {
     return Object.keys(this.model.schema.relationships).map(field => {
-      const genericOpts = mergeOptions(
-        {},
-        opts,
-        {
-          validate: {},
-          generatorOptions: { field },
-        }
-      );
+      const genericOpts = mergeOptions({}, opts, {
+        validate: {},
+        generatorOptions: { field },
+      });
       genericOpts.hapi.path = genericOpts.hapi.path.replace('{field}', field);
       if (['POST', 'PUT', 'PATCH'].indexOf(genericOpts.hapi.method) >= 0) {
         genericOpts.validate.payload = this.createJoiValidator(field);
@@ -263,13 +276,14 @@ export class BaseController {
     const routeConfig = mergeOptions(
       {},
       {
-        handler: opts.handler || this.createHandler(method, opts.generatorOptions),
+        handler:
+          opts.handler || this.createHandler(method, opts.generatorOptions),
         config: {
           pre: [this.approveHandler(method, opts.generatorOptions)],
           validate: {},
         },
       },
-      opts.hapi
+      opts.hapi,
     );
 
     if (opts.hapi.path.indexOf('itemId') >= 0) {
@@ -277,7 +291,7 @@ export class BaseController {
     }
 
     if (opts.pre !== undefined) {
-      opts.pre.forEach((p) => routeConfig.config.pre.push(p));
+      opts.pre.forEach(p => routeConfig.config.pre.push(p));
     }
 
     if (opts.validate && opts.validate.query) {

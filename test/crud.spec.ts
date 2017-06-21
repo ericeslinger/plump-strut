@@ -1,6 +1,7 @@
 import { Plump, MemoryStore } from 'plump';
-import { BaseController } from '../src/base';
+import { BaseController } from '../src/index';
 import { TestType } from './testType';
+import { StrutServer } from '../src/index';
 
 import * as chai from 'chai';
 import * as Hapi from 'hapi';
@@ -15,7 +16,6 @@ declare global {
   }
 }
 
-
 declare module 'hapi' {
   interface Server {
     register(
@@ -23,82 +23,108 @@ declare module 'hapi' {
       options: {
         select?: string | string[];
         routes: {
-          prefix: string; vhost?: string | string[]
+          prefix: string;
+          vhost?: string | string[];
         };
-      }): Promise<any>;
+      },
+    ): Promise<any>;
   }
 }
 
-
-
 const expect = chai.expect;
 describe('Base Plump Routes', () => {
-  const ms = new MemoryStore({ terminal: true });
-  const plump = new Plump();
-  const basePlugin = new BaseController(plump, TestType);
-  const hapi = new Hapi.Server();
-  hapi.connection({ port: 80 });
+  const context = {
+    ms: new MemoryStore({ terminal: true }),
+    plump: new Plump(),
+    strut: null,
+  };
 
   before(() => {
-    return plump.setTerminal(ms)
-    .then(() => plump.addType(TestType))
-    .then(() => hapi.register(basePlugin.plugin, { routes: { prefix: '/api' } }));
+    return context.plump
+      .setTerminal(context.ms)
+      .then(() => context.plump.addType(TestType))
+      .then(() => {
+        context.strut = new StrutServer(context.plump, {
+          apiPort: 4000,
+          apiProtocol: 'http',
+          apiRoot: '/api',
+          authTypes: [],
+        });
+        return context.strut.initialize();
+      });
   });
 
   it('C', () => {
-    return hapi.inject({
-      method: 'POST',
-      url: '/api',
-      payload: JSON.stringify({ attributes: { name: 'potato' } }),
-    })
-    .then((response) => {
-      return expect(JSON.parse(response.payload)).to.have.nested.property('attributes.name', 'potato');
-    });
+    return context.strut.hapi
+      .inject({
+        method: 'POST',
+        url: `/api/${TestType.type}`,
+        payload: JSON.stringify({ attributes: { name: 'potato' } }),
+      })
+      .then(response => {
+        return expect(JSON.parse(response.payload)).to.have.nested.property(
+          'attributes.name',
+          'potato',
+        );
+      });
   });
 
   it('R', () => {
-    const one = new TestType({ name: 'potato', otherName: '', extended: {} }, plump);
-    return one.save()
-    .then(() => hapi.inject(`/api/${one.id}`))
-    .then((response) => {
-      return one.get()
-      .then((v) => {
-        const resp = JSON.parse(response.payload);
-        expect(resp.attributes.name).to.equal('potato');
-        return expect(resp.id).to.equal(v.id);
+    const one = new TestType(
+      { name: 'potato', otherName: '', extended: {} },
+      context.plump,
+    );
+    return one
+      .save()
+      .then(() => context.strut.hapi.inject(`/api/${TestType.type}/${one.id}`))
+      .then(response => {
+        return one.get().then(v => {
+          const resp = JSON.parse(response.payload);
+          expect(resp.attributes.name).to.equal('potato');
+          return expect(resp.id).to.equal(v.id);
+        });
       });
-    });
   });
 
   it('U', () => {
-    const one = new TestType({ name: 'potato' }, plump);
-    return one.save()
-    .then(() => {
-      return hapi.inject({
-        method: 'PATCH',
-        url: `/api/${one.id}`,
-        payload: JSON.stringify({ attributes: { name: 'grotato' } }),
-      });
-    })
-    .then(() => one.get())
-    .then((v) => expect(v).to.have.nested.property('attributes.name', 'grotato'));
+    const one = new TestType({ name: 'potato' }, context.plump);
+    return one
+      .save()
+      .then(() => {
+        return context.strut.hapi.inject({
+          method: 'PATCH',
+          url: `/api/${TestType.type}/${one.id}`,
+          payload: JSON.stringify({ attributes: { name: 'grotato' } }),
+        });
+      })
+      .then(() => one.get())
+      .then(v =>
+        expect(v).to.have.nested.property('attributes.name', 'grotato'),
+      );
   });
 
   it('D', () => {
-    const one = new TestType({ name: 'potato', otherName: '', extended: {} }, plump);
+    const one = new TestType(
+      { name: 'potato', otherName: '', extended: {} },
+      context.plump,
+    );
     let id;
-    return one.save()
-    .then(() => hapi.inject(`/api/${one.id}`))
-    .then((response) => {
-      id = one.id;
-      return one.get()
-      .then((v) => expect(v).to.deep.equal(JSON.parse(response.payload)));
-    }).then(() => {
-      return hapi.inject({
-        method: 'DELETE',
-        url: `/api/${one.id}`,
-      });
-    }).then(() => hapi.inject(`/api/${id}`))
-    .then((v) => expect(v).to.have.property('statusCode', 404));
+    return one
+      .save()
+      .then(() => context.strut.hapi.inject(`/api/${TestType.type}/${one.id}`))
+      .then(response => {
+        id = one.id;
+        return one
+          .get()
+          .then(v => expect(v).to.deep.equal(JSON.parse(response.payload)));
+      })
+      .then(() => {
+        return context.strut.hapi.inject({
+          method: 'DELETE',
+          url: `/api/${TestType.type}/${one.id}`,
+        });
+      })
+      .then(() => context.strut.hapi.inject(`/api/${TestType.type}/${id}`))
+      .then(v => expect(v).to.have.property('statusCode', 404));
   });
 });
