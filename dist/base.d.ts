@@ -15,6 +15,7 @@ export declare class BaseController {
     plump: Plump;
     model: typeof Model;
     options: any;
+    routeInfo: any;
     plugin: {
         attributes: {
             version: string;

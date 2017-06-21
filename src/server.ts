@@ -3,9 +3,10 @@ import * as SocketIO from 'socket.io';
 import * as Bell from 'bell';
 import { Plump, Model } from 'plump';
 import { BaseController } from './base';
+import { RouteOptions } from './routes';
 import { dispatch } from './socket/channels';
 import { configureAuth, AuthenticationStrategy } from './authentication';
-import ulid from 'ulid';
+import * as mergeOptions from 'merge-options';
 
 export interface StrutConfig {
   models?: typeof Model[];
@@ -15,6 +16,7 @@ export interface StrutConfig {
   apiPort: number;
   hostName: string;
   authRoot: string;
+  routeOptions: Partial<RouteOptions>;
 }
 
 const defaultSettings: StrutConfig = {
@@ -24,6 +26,7 @@ const defaultSettings: StrutConfig = {
   authRoot: '/auth',
   hostName: 'localhost',
   apiProtocol: 'https',
+  routeOptions: {},
 };
 
 export interface StrutServices {
@@ -40,7 +43,7 @@ export class StrutServer {
   constructor(plump: Plump, conf: Partial<StrutConfig>) {
     this.services.hapi = new Hapi.Server();
     this.services.plump = plump;
-    this.config = Object.assign({}, defaultSettings, conf);
+    this.config = mergeOptions({}, defaultSettings, conf);
   }
 
   initialize() {
@@ -61,8 +64,11 @@ export class StrutServer {
         return Promise.all(
           (this.config.models || this.services.plump.getTypes()).map(t => {
             return this.services.hapi.register(
-              new BaseController(this.services.plump, t)
-                .plugin as Hapi.PluginFunction<{}>,
+              new BaseController(
+                this.services.plump,
+                t,
+                this.config.routeOptions,
+              ).plugin as Hapi.PluginFunction<{}>,
               { routes: { prefix: `${this.config.apiRoot}/${t.type}` } },
             );
           }),

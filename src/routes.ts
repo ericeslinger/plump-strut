@@ -1,6 +1,22 @@
 import * as Joi from 'joi';
+import * as Hapi from 'hapi';
 
-export function createRoutes(opts: any = {}) {
+export interface RouteOptions {
+  cors: Hapi.CorsConfigurationObject;
+  authFor: {
+    read: string;
+    listChildren: string;
+    query: string;
+    create: string;
+    update: string;
+    delete: string;
+    addChild: string;
+    modifyChild: string;
+    removeChild: string;
+  };
+}
+
+export function createRoutes(opts: Partial<RouteOptions> = {}) {
   const retVal = {
     read: {
       validate: {
@@ -11,7 +27,9 @@ export function createRoutes(opts: any = {}) {
       hapi: {
         method: 'GET',
         path: '/{itemId}',
-        config: {},
+        config: {
+          cors: opts.cors ? opts.cors : false,
+        },
       },
     },
     listChildren: {
@@ -24,14 +42,18 @@ export function createRoutes(opts: any = {}) {
       hapi: {
         method: 'GET',
         path: '/{itemId}/{field}',
-        config: {},
+        config: {
+          cors: opts.cors ? opts.cors : false,
+        },
       },
     },
     query: {
       hapi: {
         method: 'GET',
         path: '',
-        config: {},
+        config: {
+          cors: opts.cors ? opts.cors : false,
+        },
       },
     },
     create: {
@@ -42,6 +64,7 @@ export function createRoutes(opts: any = {}) {
         method: 'POST',
         path: '',
         config: {
+          cors: opts.cors ? opts.cors : false,
           payload: { output: 'data', parse: true },
         },
       },
@@ -57,6 +80,7 @@ export function createRoutes(opts: any = {}) {
         method: 'PATCH',
         path: '/{itemId}',
         config: {
+          cors: opts.cors ? opts.cors : false,
           payload: { output: 'data', parse: true },
         },
       },
@@ -70,7 +94,9 @@ export function createRoutes(opts: any = {}) {
       hapi: {
         method: 'DELETE',
         path: '/{itemId}',
-        config: {},
+        config: {
+          cors: opts.cors ? opts.cors : false,
+        },
       },
     },
     addChild: {
@@ -84,6 +110,7 @@ export function createRoutes(opts: any = {}) {
         method: 'PUT',
         path: '/{itemId}/{field}',
         config: {
+          cors: opts.cors ? opts.cors : false,
           payload: { output: 'data', parse: true },
         },
       },
@@ -100,6 +127,7 @@ export function createRoutes(opts: any = {}) {
         method: 'PATCH',
         path: '/{itemId}/{field}/{childId}',
         config: {
+          cors: opts.cors ? opts.cors : false,
           payload: { output: 'data', parse: true },
         },
       },
@@ -115,13 +143,15 @@ export function createRoutes(opts: any = {}) {
       hapi: {
         method: 'DELETE',
         path: '/{itemId}/{field}/{childId}',
-        config: {},
+        config: {
+          cors: opts.cors ? opts.cors : false,
+        },
       },
     },
   };
 
   if (opts.authFor) {
-    Object.keys(opts.authFor).forEach((k) => {
+    Object.keys(opts.authFor).forEach(k => {
       retVal[k].hapi.config.auth = opts.authFor[k];
     });
   }

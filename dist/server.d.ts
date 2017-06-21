@@ -1,5 +1,6 @@
 import * as Hapi from 'hapi';
 import { Plump, Model } from 'plump';
+import { RouteOptions } from './routes';
 import { AuthenticationStrategy } from './authentication';
 export interface StrutConfig {
     models?: typeof Model[];
@@ -9,6 +10,7 @@ export interface StrutConfig {
     apiPort: number;
     hostName: string;
     authRoot: string;
+    routeOptions: Partial<RouteOptions>;
 }
 export interface StrutServices {
     hapi: Hapi.Server;
