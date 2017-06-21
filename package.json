@@ -1,6 +1,6 @@
 {
   "name": "plump-strut",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "Adapter for creating CRUD route handlers for plump object in hapi.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,11 +26,9 @@
     "@types/boom": "4.3.5",
     "@types/chai": "^4.0.0",
     "@types/core-js": "^0.9.41",
-    "@types/hapi": "^16.1.5",
     "@types/joi": "^10.4.0",
     "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.1",
-    "@types/socket.io": "^1.4.29",
     "chai": "^4.0.2",
     "del": "^3.0.0",
     "gulp": "gulpjs/gulp.git#4.0",
@@ -45,6 +43,8 @@
     "typescript": "^2.3.4"
   },
   "dependencies": {
+    "@types/hapi": "^16.1.5",
+    "@types/socket.io": "^1.4.29",
     "bell": "^8.7.0",
     "boom": "^5.1.0",
     "hapi": "^16.4.3",
