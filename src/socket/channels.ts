@@ -18,7 +18,7 @@ function singletonDispatch(
 }
 
 export function dispatch(s: StrutServer) {
-  s.io.on('connection', client => {
+  s.services.io.on('connection', client => {
     client.on('auth', msg => {
       const request = Object.assign({}, msg, { client: client });
       singletonDispatch(authChannel, request, s);

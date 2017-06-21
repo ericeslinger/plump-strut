@@ -1,5 +1,5 @@
 import * as Hapi from 'hapi';
-import { Plump, Model, Oracle } from 'plump';
+import { Plump, Model } from 'plump';
 import { AuthenticationStrategy } from './authentication';
 export interface StrutConfig {
     models?: typeof Model[];
@@ -10,13 +10,16 @@ export interface StrutConfig {
     hostName: string;
     authRoot: string;
 }
-export declare class StrutServer {
-    plump: Plump;
-    oracle: Oracle;
+export interface StrutServices {
     hapi: Hapi.Server;
     io: SocketIO.Server;
+    plump: Plump;
+    [key: string]: any;
+}
+export declare class StrutServer {
     config: StrutConfig;
-    constructor(plump: Plump, oracle: Oracle, conf: Partial<StrutConfig>);
+    services: Partial<StrutServices>;
+    constructor(plump: Plump, conf: Partial<StrutConfig>);
     initialize(): Promise<void>;
     baseUrl(): string;
     start(): Promise<Error>;

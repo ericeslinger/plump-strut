@@ -1,7 +1,7 @@
 import * as Hapi from 'hapi';
 import * as SocketIO from 'socket.io';
 import * as Bell from 'bell';
-import { Plump, Model, Oracle } from 'plump';
+import { Plump, Model } from 'plump';
 import { BaseController } from './base';
 import { dispatch } from './socket/channels';
 import { configureAuth, AuthenticationStrategy } from './authentication';
@@ -26,28 +26,31 @@ const defaultSettings: StrutConfig = {
   apiProtocol: 'https',
 };
 
-export class StrutServer {
-  public hapi: Hapi.Server;
-  public io: SocketIO.Server;
-  public config: StrutConfig;
+export interface StrutServices {
+  hapi: Hapi.Server;
+  io: SocketIO.Server;
+  plump: Plump;
+  [key: string]: any;
+}
 
-  constructor(
-    public plump: Plump,
-    public oracle: Oracle,
-    conf: Partial<StrutConfig>,
-  ) {
-    this.hapi = new Hapi.Server();
+export class StrutServer {
+  public config: StrutConfig;
+  public services: Partial<StrutServices> = {};
+
+  constructor(plump: Plump, conf: Partial<StrutConfig>) {
+    this.services.hapi = new Hapi.Server();
+    this.services.plump = plump;
     this.config = Object.assign({}, defaultSettings, conf);
   }
 
   initialize() {
     return Promise.resolve()
       .then(() => {
-        this.hapi.connection({ port: this.config.apiPort });
-        return this.hapi.register(Bell);
+        this.services.hapi.connection({ port: this.config.apiPort });
+        return this.services.hapi.register(Bell);
       })
       .then(() => {
-        this.hapi.state('authNonce', {
+        this.services.hapi.state('authNonce', {
           ttl: null,
           isSecure: false,
           isHttpOnly: false,
@@ -56,9 +59,9 @@ export class StrutServer {
           strictHeader: true, // don't allow violations of RFC 6265
         });
         return Promise.all(
-          (this.config.models || this.plump.getTypes()).map(t => {
-            return this.hapi.register(
-              new BaseController(this.plump, t)
+          (this.config.models || this.services.plump.getTypes()).map(t => {
+            return this.services.hapi.register(
+              new BaseController(this.services.plump, t)
                 .plugin as Hapi.PluginFunction<{}>,
               { routes: { prefix: `${this.config.apiRoot}/${t.type}` } },
             );
@@ -66,18 +69,21 @@ export class StrutServer {
         );
       })
       .then(() =>
-        this.hapi.register(configureAuth(this) as Hapi.PluginFunction<{}>, {
-          routes: { prefix: this.config.authRoot },
-        }),
+        this.services.hapi.register(
+          configureAuth(this) as Hapi.PluginFunction<{}>,
+          {
+            routes: { prefix: this.config.authRoot },
+          },
+        ),
       )
       .then(() => {
-        this.hapi.ext('onPreAuth', (request, reply) => {
+        this.services.hapi.ext('onPreAuth', (request, reply) => {
           request.connection.info.protocol = this.config.apiProtocol;
           return reply.continue();
         });
       })
       .then(() => {
-        this.io = SocketIO(this.hapi.listener);
+        this.services.io = SocketIO(this.services.hapi.listener);
         dispatch(this);
       });
   }
@@ -93,6 +99,6 @@ export class StrutServer {
   }
 
   start() {
-    return this.hapi.start();
+    return this.services.hapi.start();
   }
 }

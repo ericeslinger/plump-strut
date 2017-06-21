@@ -52,7 +52,7 @@ function routeGen(options: AuthenticationStrategy, strut: StrutServer) {
   );
   const routeHandler: Hapi.RouteHandler = (request, reply) => {
     return options.handler(request, strut).then(r => {
-      strut.io
+      strut.services.io
         .to(request.state[`${options.name}-nonce`].nonce)
         .emit(request.state[`${options.name}-nonce`].nonce, {
           status: 'success',

@@ -26,7 +26,7 @@ export function dispatch(
       }),
     });
   } else if (msg.request === 'testkey') {
-    return server.oracle.keyService.test(msg.key).then(v => {
+    return server.services.oracle.keyService.test(msg.key).then(v => {
       return {
         response: msg.request,
         auth: v,
