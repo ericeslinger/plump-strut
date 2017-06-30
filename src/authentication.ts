@@ -2,6 +2,7 @@ import * as Joi from 'joi';
 import * as Hapi from 'hapi';
 import * as Bell from 'bell';
 import { StrutConfig, StrutServer } from './server';
+import { ModelData } from 'plump';
 
 export interface AuthenticationResponse {
   response: string;
@@ -46,9 +47,9 @@ function routeGen(options: AuthenticationStrategy, strut: StrutServer) {
       encoding: 'base64json',
       isSameSite: false,
       clearInvalid: false, // remove invalid cookies
-      strictHeader: true, // don't allow violations of RFC 6265
+      strictHeader: true // don't allow violations of RFC 6265
     },
-    options.nonceCookie,
+    options.nonceCookie
   );
   const routeHandler: Hapi.RouteHandler = (request, reply) => {
     return options.handler(request, strut).then(r => {
@@ -56,7 +57,7 @@ function routeGen(options: AuthenticationStrategy, strut: StrutServer) {
         .to(request.state[`${options.name}-nonce`].nonce)
         .emit(request.state[`${options.name}-nonce`].nonce, {
           status: 'success',
-          token: r.token,
+          token: r.token
         });
       reply(r.response).type('text/html').unstate(`${options.name}-nonce`);
     });
@@ -71,10 +72,25 @@ function routeGen(options: AuthenticationStrategy, strut: StrutServer) {
       config: {
         auth: options.name,
         state: {
-          parse: true,
-        },
-      },
+          parse: true
+        }
+      }
     });
+  };
+}
+
+export interface TokenService {
+  validate: (
+    token: string,
+    callback: (err: Error | null, credentials: any) => void
+  ) => void;
+  tokenToUser: (token: string) => Promise<ModelData>;
+  userToToken: (user: ModelData) => Promise<string>;
+}
+
+export function rebindTokenValidator(t: TokenService) {
+  return {
+    validateFunc: (token, callback) => t.validate(token, callback)
   };
 }
 
@@ -96,28 +112,28 @@ export function configureAuth(strut: StrutServer) {
             'nonce'
           ]}</body>
           </html>
-        `,
+        `
         )
           .type('text/html')
           .state(`${request.query['method']}-nonce`, {
-            nonce: request.query['nonce'],
+            nonce: request.query['nonce']
           });
       },
       config: {
         validate: {
           query: {
             method: Joi.string().required(),
-            nonce: Joi.string().required(),
-          },
-        },
-      },
+            nonce: Joi.string().required()
+          }
+        }
+      }
     });
     strut.config.authTypes.forEach(t => routeGen(t, strut)(s));
     next();
   };
   plugin.attributes = {
     version: '1.0.0',
-    name: 'authentication',
+    name: 'authentication'
   };
   return plugin;
 }
