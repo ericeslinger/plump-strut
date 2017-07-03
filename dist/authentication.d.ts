@@ -1,5 +1,6 @@
 import * as Hapi from 'hapi';
 import { StrutServer } from './server';
+import { ModelData } from 'plump';
 export interface AuthenticationResponse {
     response: string;
     token: string;
@@ -29,6 +30,14 @@ export interface AuthenticationStrategy {
     };
     nonceCookie?: Hapi.ServerStateCookieConfiguationObject;
 }
+export interface TokenService {
+    validate: (token: string, callback: (err: Error | null, credentials: any) => void) => void;
+    tokenToUser: (token: string) => Promise<ModelData>;
+    userToToken: (user: ModelData) => Promise<string>;
+}
+export declare function rebindTokenValidator(t: TokenService): {
+    validateFunc: (token: any, callback: any) => void;
+};
 export declare function configureAuth(strut: StrutServer): Hapi.PluginFunction<{
     version: string;
     name: string;

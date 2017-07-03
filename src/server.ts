@@ -1,11 +1,16 @@
 import * as Hapi from 'hapi';
 import * as SocketIO from 'socket.io';
 import * as Bell from 'bell';
-import { Plump, Model } from 'plump';
+import { Plump, Model, TerminalStore } from 'plump';
 import { BaseController } from './base';
 import { RouteOptions } from './routes';
 import { dispatch } from './socket/channels';
-import { configureAuth, AuthenticationStrategy } from './authentication';
+import {
+  configureAuth,
+  TokenService,
+  AuthenticationStrategy,
+} from './authentication';
+import * as bearer from 'hapi-auth-bearer-token';
 import * as mergeOptions from 'merge-options';
 
 export interface StrutConfig {
@@ -33,21 +38,34 @@ export interface StrutServices {
   hapi: Hapi.Server;
   io: SocketIO.Server;
   plump: Plump;
+  tokenStore: TokenService;
   [key: string]: any;
 }
 
 export class StrutServer {
   public config: StrutConfig;
-  public services: Partial<StrutServices> = {};
 
-  constructor(plump: Plump, conf: Partial<StrutConfig>) {
+  constructor(
+    plump: Plump,
+    conf: Partial<StrutConfig>,
+    public services: Partial<StrutServices> = {},
+  ) {
     this.services.hapi = new Hapi.Server();
     this.services.plump = plump;
     this.config = mergeOptions({}, defaultSettings, conf);
   }
 
   preRoute() {
-    return Promise.resolve();
+    return Promise.resolve().then(() => {
+      if (this.services.tokenStore) {
+        return this.services.hapi.register(bearer).then(() =>
+          this.services.hapi.auth.strategy('token', 'bearer-access-token', {
+            validateFunc: (token, callback) =>
+              this.services.tokenStore.validate(token, callback),
+          }),
+        );
+      }
+    });
   }
 
   preInit() {

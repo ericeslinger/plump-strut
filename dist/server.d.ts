@@ -1,7 +1,7 @@
 import * as Hapi from 'hapi';
 import { Plump, Model } from 'plump';
 import { RouteOptions } from './routes';
-import { AuthenticationStrategy } from './authentication';
+import { TokenService, AuthenticationStrategy } from './authentication';
 export interface StrutConfig {
     models?: typeof Model[];
     apiRoot: string;
@@ -16,12 +16,13 @@ export interface StrutServices {
     hapi: Hapi.Server;
     io: SocketIO.Server;
     plump: Plump;
+    tokenStore: TokenService;
     [key: string]: any;
 }
 export declare class StrutServer {
-    config: StrutConfig;
     services: Partial<StrutServices>;
-    constructor(plump: Plump, conf: Partial<StrutConfig>);
+    config: StrutConfig;
+    constructor(plump: Plump, conf: Partial<StrutConfig>, services?: Partial<StrutServices>);
     preRoute(): Promise<void>;
     preInit(): Promise<void>;
     initialize(): Promise<void>;
