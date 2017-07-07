@@ -1,4 +1,5 @@
-import { Model, Plump, ModelData, ModelReference } from 'plump';
+import { Model, Plump, ModelData, ModelReference, Oracle } from 'plump';
+import { StrutServer } from './server';
 import * as Hapi from 'hapi';
 export interface RoutedItem<T extends ModelData> extends Hapi.Request {
     pre: {
@@ -14,6 +15,7 @@ export interface StrutHandler<T> {
 export declare class BaseController {
     plump: Plump;
     model: typeof Model;
+    oracle: Oracle;
     options: any;
     routeInfo: any;
     plugin: {
@@ -23,7 +25,7 @@ export declare class BaseController {
         };
     };
     static routes: string[];
-    constructor(plump: Plump, model: typeof Model, options?: {});
+    constructor(strut: StrutServer, model: typeof Model, options?: {});
     extraRoutes(): any[];
     read(): StrutHandler<ModelData>;
     update(): StrutHandler<ModelData>;

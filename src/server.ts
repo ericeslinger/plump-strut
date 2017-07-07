@@ -93,11 +93,8 @@ export class StrutServer {
         return Promise.all(
           (this.config.models || this.services.plump.getTypes()).map(t => {
             return this.services.hapi.register(
-              new BaseController(
-                this.services.plump,
-                t,
-                this.config.routeOptions,
-              ).plugin as Hapi.PluginFunction<{}>,
+              new BaseController(this, t, this.config.routeOptions)
+                .plugin as Hapi.PluginFunction<{}>,
               { routes: { prefix: `${this.config.apiRoot}/${t.type}` } },
             );
           }),

@@ -2,7 +2,8 @@ import * as Boom from 'boom';
 import * as Joi from 'joi';
 import { createRoutes } from './routes';
 import * as mergeOptions from 'merge-options';
-import { Model, Plump, ModelData, ModelReference } from 'plump'; // tslint:disable-line no-unused-variable
+import { Model, Plump, ModelData, ModelReference, Oracle } from 'plump'; // tslint:disable-line no-unused-variable
+import { StrutServer } from './server';
 // need to import ModelReference because some of the methods return them.
 import * as Hapi from 'hapi';
 
@@ -32,6 +33,7 @@ export interface StrutHandler<T> {
 export class BaseController {
   public plump: Plump;
   public model: typeof Model;
+  public oracle: Oracle;
   public options;
   public routeInfo;
   public plugin: {
@@ -41,8 +43,9 @@ export class BaseController {
     };
   };
   static routes: string[];
-  constructor(plump: Plump, model: typeof Model, options = {}) {
-    this.plump = plump;
+  constructor(strut: StrutServer, model: typeof Model, options = {}) {
+    this.plump = strut.services.plump;
+    this.oracle = strut.services.oracle;
     this.model = model;
     this.options = Object.assign({}, { sideloads: [] }, options);
     this.plugin = plugin.bind(this);
@@ -241,10 +244,192 @@ export class BaseController {
   // or any other value on non-approved status
   approveHandler(method, opts) {
     // eslint-disable-line no-unused-vars
-    return {
-      method: (request, reply) => reply(true),
-      assign: 'approve',
-    };
+    if (this.oracle === null) {
+      return {
+        method: (request, reply) => reply(true),
+        assign: 'approve',
+      };
+    } else if (method === 'create') {
+      return {
+        assign: 'approve',
+        method: (request, reply) =>
+          this.oracle
+            .authorize({
+              data: request.data,
+              target: { type: this.model.type },
+              kind: 'attributes',
+              action: 'create',
+              actor: {
+                type: 'profiles',
+                id: request.auth.credentials.user.attributes.profile_id,
+              },
+            })
+            .then(v => reply(v ? v : Boom.forbidden())),
+      };
+    } else if (method === 'read') {
+      return {
+        assign: 'approve',
+        method: (request, reply) =>
+          this.oracle
+            .authorize({
+              action: 'read',
+              kind: 'attributes',
+              actor: {
+                type: 'profiles',
+                id: request.auth.credentials.user.attributes.profile_id,
+              },
+              target: {
+                type: this.model.type,
+                id: request.params.itemId,
+              },
+            })
+            .then(v => reply(v ? v : Boom.forbidden())),
+      };
+    } else if (method === 'update') {
+      return {
+        assign: 'approve',
+        method: (request, reply) =>
+          this.oracle
+            .authorize({
+              action: 'update',
+              data: request.data,
+              kind: 'attributes',
+              actor: {
+                type: 'profiles',
+                id: request.auth.credentials.user.attributes.profile_id,
+              },
+              target: {
+                type: this.model.type,
+                id: request.params.itemId,
+              },
+            })
+            .then(v => reply(v ? v : Boom.forbidden())),
+      };
+    } else if (method === 'delete') {
+      return {
+        assign: 'approve',
+        method: (request, reply) =>
+          this.oracle
+            .authorize({
+              action: 'delete',
+              kind: 'attributes',
+              actor: {
+                type: 'profiles',
+                id: request.auth.credentials.user.attributes.profile_id,
+              },
+              target: {
+                type: this.model.type,
+                id: request.params.itemId,
+              },
+            })
+            .then(v => reply(v ? v : Boom.forbidden())),
+      };
+    } else if (method === 'addChild') {
+      return {
+        assign: 'approve',
+        method: (request, reply) =>
+          this.oracle
+            .authorize({
+              action: 'create',
+              kind: 'relationship',
+              relationship: opts.generatorOptions.field,
+              actor: {
+                type: 'profiles',
+                id: request.auth.credentials.user.attributes.profile_id,
+              },
+              meta: request.data.meta ? request.data.meta : undefined,
+              child: {
+                type: this.model.schema.relationships[
+                  opts.generatorOptions.field
+                ].type.sides[opts.generatorOptions.field].otherType,
+                id: request.data.id,
+              },
+              parent: {
+                type: this.model.type,
+                id: request.params.itemId,
+              },
+            })
+            .then(v => reply(v ? v : Boom.forbidden())),
+      };
+    } else if (method === 'listChildren') {
+      return {
+        assign: 'approve',
+        method: (request, reply) =>
+          this.oracle
+            .authorize({
+              action: 'read',
+              kind: 'relationship',
+              relationship: opts.generatorOptions.field,
+              actor: {
+                type: 'profiles',
+                id: request.auth.credentials.user.attributes.profile_id,
+              },
+              parent: {
+                type: this.model.type,
+                id: request.params.itemId,
+              },
+            })
+            .then(v => reply(v ? v : Boom.forbidden())),
+      };
+    } else if (method === 'modifyChild') {
+      return {
+        assign: 'approve',
+        method: (request, reply) =>
+          this.oracle
+            .authorize({
+              action: 'update',
+              kind: 'relationship',
+              relationship: opts.generatorOptions.field,
+              actor: {
+                type: 'profiles',
+                id: request.auth.credentials.user.attributes.profile_id,
+              },
+              meta: request.data.meta,
+              child: {
+                type: this.model.schema.relationships[
+                  opts.generatorOptions.field
+                ].type.sides[opts.generatorOptions.field].otherType,
+                id: request.data.id,
+              },
+              parent: {
+                type: this.model.type,
+                id: request.params.itemId,
+              },
+            })
+            .then(v => reply(v ? v : Boom.forbidden())),
+      };
+    } else if (method === 'removeChild') {
+      return {
+        assign: 'approve',
+        method: (request, reply) =>
+          this.oracle
+            .authorize({
+              action: 'delete',
+              kind: 'relationship',
+              relationship: opts.generatorOptions.field,
+              actor: {
+                type: 'profiles',
+                id: request.auth.credentials.user.attributes.profile_id,
+              },
+              child: {
+                id: request.params.childId,
+                type: this.model.schema.relationships[
+                  opts.generatorOptions.field
+                ].type.sides[opts.generatorOptions.field].otherType,
+              },
+              parent: {
+                type: this.model.type,
+                id: request.params.itemId,
+              },
+            })
+            .then(v => reply(v ? v : Boom.forbidden())),
+      };
+    } else {
+      return {
+        method: (request, reply) => reply(true),
+        assign: 'approve',
+      };
+    }
   }
 
   routeRelationships(method, opts) {
