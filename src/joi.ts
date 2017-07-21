@@ -1,5 +1,5 @@
 import { Generator, Transformer, RouteOptions } from './dataTypes';
-import { ModelSchema } from 'plump';
+import { Model } from 'plump';
 import * as Hapi from 'hapi';
 import * as mergeOptions from 'merge-options';
 import * as Joi from 'joi';
@@ -18,6 +18,10 @@ function attributeValidator(schema: ModelSchema) {
 
   return retVal;
 }
+
+childSchema(m: typeof Model, r: string) {
+  return m.
+} 
 
 function relationshipValidate(
   schema: ModelSchema,

@@ -1,13 +1,19 @@
 import * as Hapi from 'hapi';
 import {
+  Model,
   ModelReference,
   IndefiniteModelData,
   ModelData,
   ModelSchema,
 } from 'plump';
 
+export interface StrutInnerConfig
+  extends Hapi.RouteAdditionalConfigurationOptions {
+  pre: Hapi.RoutePrerequisiteObjects[];
+}
+
 export interface StrutRouteConfiguration extends Hapi.RouteConfiguration {
-  config: Hapi.RouteAdditionalConfigurationOptions;
+  config: StrutInnerConfig;
 }
 
 export interface Transformer {
@@ -18,6 +24,8 @@ export interface BasicRouteOptions {
   cors: Hapi.CorsConfigurationObject | boolean;
   authentication: string;
   schema: ModelSchema;
+  model: typeof Model;
+  actorMapFn?: (m: ModelData) => ModelReference;
 }
 export interface BasicRouteSelector {
   kind: string;
@@ -33,7 +41,6 @@ export interface RelationshipRouteSelector extends BasicRouteSelector {
   kind: 'relationship';
   action: 'create' | 'read' | 'update' | 'delete';
   relationship: string;
-  childSchema: ModelSchema;
 }
 
 export type RouteSelector = AttributeRouteSelector | RelationshipRouteSelector;
@@ -76,6 +83,14 @@ export interface AttributesCreateAuthorizeRequest
   };
 }
 
+export interface AttributesQueryAuthorizeRequest
+  extends AbstractAttributesAuthorizeRequest {
+  action: 'query';
+  target: {
+    type: string;
+  };
+}
+
 export interface AttributesUpdateAuthorizeRequest
   extends AbstractAttributesAuthorizeRequest {
   action: 'update';
@@ -87,6 +102,7 @@ export type AttributesAuthorizeRequest =
   | AttributesCreateAuthorizeRequest
   | AttributesReadAuthorizeRequest
   | AttributesUpdateAuthorizeRequest
+  | AttributesQueryAuthorizeRequest
   | AttributesDeleteAuthorizeRequest;
 
 export interface AbstractRelationshipAuthorizeRequest
@@ -175,4 +191,12 @@ export interface KeyService {
   test(key: string): Promise<boolean>;
   get<T>(key: string): Promise<T | null>;
   set<T>(key: string, val: T): Promise<T | null>;
+}
+
+export interface RouteGenerator {
+  base: Generator;
+  joi: Generator;
+  authorize: Generator;
+  handle: Generator;
+  package: Generator;
 }
