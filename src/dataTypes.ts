@@ -1,3 +1,4 @@
+import * as Hapi from 'hapi';
 import {
   ModelReference,
   IndefiniteModelData,
@@ -5,15 +6,53 @@ import {
   ModelSchema,
 } from 'plump';
 
+export interface StrutRouteConfiguration extends Hapi.RouteConfiguration {
+  config: Hapi.RouteAdditionalConfigurationOptions;
+}
+
+export interface Transformer {
+  (block: Partial<StrutRouteConfiguration>): Partial<StrutRouteConfiguration>;
+}
+
+export interface BasicRouteOptions {
+  cors: Hapi.CorsConfigurationObject | boolean;
+  authentication: string;
+  schema: ModelSchema;
+}
+export interface BasicRouteSelector {
+  kind: string;
+  action: string;
+}
+
+export interface AttributeRouteSelector extends BasicRouteSelector {
+  kind: 'attributes';
+  action: 'create' | 'read' | 'update' | 'delete' | 'query';
+}
+
+export interface RelationshipRouteSelector extends BasicRouteSelector {
+  kind: 'relationship';
+  action: 'create' | 'read' | 'update' | 'delete';
+  relationship: string;
+  childSchema: ModelSchema;
+}
+
+export type RouteSelector = AttributeRouteSelector | RelationshipRouteSelector;
+export type RouteOptions = BasicRouteOptions & RouteSelector;
+
+export interface Generator {
+  (opts: RouteOptions): Transformer;
+}
+
 export interface AbstractAuthorizeRequest {
   kind: 'attributes' | 'relationship' | 'compound';
+  actor: ModelReference;
+  action: string;
 }
 
 export interface AbstractAttributesAuthorizeRequest
   extends AbstractAuthorizeRequest {
-  action: 'create' | 'read' | 'update' | 'delete';
+  action: 'create' | 'read' | 'update' | 'delete' | 'query';
   kind: 'attributes';
-  actor: ModelReference;
 }
 
 export interface AttributesReadAuthorizeRequest
@@ -31,7 +70,7 @@ export interface AttributesDeleteAuthorizeRequest
 export interface AttributesCreateAuthorizeRequest
   extends AbstractAttributesAuthorizeRequest {
   action: 'create';
-  data?: IndefiniteModelData;
+  data: IndefiniteModelData;
   target: {
     type: string;
   };
@@ -41,7 +80,7 @@ export interface AttributesUpdateAuthorizeRequest
   extends AbstractAttributesAuthorizeRequest {
   action: 'update';
   target: ModelReference;
-  data?: ModelData;
+  data: ModelData;
 }
 
 export type AttributesAuthorizeRequest =
@@ -54,9 +93,8 @@ export interface AbstractRelationshipAuthorizeRequest
   extends AbstractAuthorizeRequest {
   kind: 'relationship';
   action: 'create' | 'read' | 'update' | 'delete';
-  actor: ModelData;
   relationship: string;
-  parent: ModelReference;
+  target: ModelReference;
 }
 
 export interface RelationshipCreateAuthorizeRequest
@@ -128,26 +166,6 @@ export interface DelegateAuthorizeResponse extends AbstractAuthorizeResponse {
 export type AuthorizeResponse =
   | FinalAuthorizeResponse
   | DelegateAuthorizeResponse;
-
-export interface AttributesAuthorize {
-  authorizeCreate(AttributesCreateAuthorizeRequest): Promise<AuthorizeResponse>;
-  authorizeRead(AttributesReadAuthorizeRequest): Promise<AuthorizeResponse>;
-  authorizeUpdate(AttributesUpdateAuthorizeRequest): Promise<AuthorizeResponse>;
-  authorizeDelete(AttributesDeleteAuthorizeRequest): Promise<AuthorizeResponse>;
-}
-
-export interface RelationshipAuthorize {
-  authorizeCreate(
-    RelationshipCreateAuthorizeRequest
-  ): Promise<AuthorizeResponse>;
-  authorizeRead(RelationshipReadAuthorizeRequest): Promise<AuthorizeResponse>;
-  authorizeUpdate(
-    RelationshipUpdateAuthorizeRequest
-  ): Promise<AuthorizeResponse>;
-  authorizeDelete(
-    RelationshipDeleteAuthorizeRequest
-  ): Promise<AuthorizeResponse>;
-}
 
 export interface AuthorizerDefinition {
   authorize(req: AuthorizeRequest): Promise<AuthorizeResponse>;
