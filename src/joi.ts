@@ -1,39 +1,40 @@
-import { Generator, Transformer, RouteOptions } from './dataTypes';
-import { Model } from 'plump';
+import {
+  Generator,
+  Transformer,
+  RouteOptions,
+  StrutServices,
+} from './dataTypes';
+import { Model, Plump } from 'plump';
 import * as Hapi from 'hapi';
 import * as mergeOptions from 'merge-options';
 import * as Joi from 'joi';
 
-function attributeValidator(schema: ModelSchema) {
+function attributeValidator(m: typeof Model) {
   const retVal: any = {
     type: Joi.string(),
-    id: Joi[schema.attributes[schema.idAttribute].type](),
+    id: Joi[m.schema.attributes[m.schema.idAttribute].type](),
     attributes: {},
     relationships: {},
   };
 
-  Object.keys(schema.attributes).forEach(attr => {
-    retVal.attributes[attr] = Joi[schema.attributes[attr].type]();
+  Object.keys(m.schema.attributes).forEach(attr => {
+    retVal.attributes[attr] = Joi[m.schema.attributes[attr].type]();
   });
 
   return retVal;
 }
 
-childSchema(m: typeof Model, r: string) {
-  return m.
-} 
-
-function relationshipValidate(
-  schema: ModelSchema,
-  relationship: string,
-  childSchema: ModelSchema
-) {
+function relationshipValidate(m: typeof Model, relationship: string, p: Plump) {
+  const c: typeof Model =
+    p.types[
+      m.schema.relationships[relationship].type.sides[relationship].otherType
+    ];
   const dataSchema = {
-    id: Joi[childSchema.attributes[childSchema.idAttribute].type](),
+    id: Joi[c.schema.attributes[c.schema.idAttribute].type](),
   };
 
-  if (schema.relationships[relationship].type.extras) {
-    const extras = schema.relationships[relationship].type.extras;
+  if (m.schema.relationships[relationship].type.extras) {
+    const extras = m.schema.relationships[relationship].type.extras;
 
     Object.keys(extras).forEach(extra => {
       dataSchema['meta'] = dataSchema['meta'] || {};
@@ -43,8 +44,20 @@ function relationshipValidate(
   return dataSchema;
 }
 
-export function joi(options: RouteOptions): Transformer {
-  const idType = options.schema.attributes[options.schema.idAttribute].type;
+function childIdType(m: typeof Model, relationship: string, p: Plump) {
+  const c: typeof Model =
+    p.types[
+      m.schema.relationships[relationship].type.sides[relationship].otherType
+    ];
+  return c.schema.attributes[c.schema.idAttribute].type;
+}
+
+export const joi: Generator = (
+  options: RouteOptions,
+  services: StrutServices
+) => {
+  const idType =
+    options.model.schema.attributes[options.model.schema.idAttribute].type;
   return (i: Partial<Hapi.RouteConfiguration>) => {
     function joiBlock(): Partial<Hapi.RouteConfiguration> {
       if (options.kind === 'attributes') {
@@ -53,7 +66,7 @@ export function joi(options: RouteOptions): Transformer {
             return {
               config: {
                 validate: {
-                  payload: attributeValidator(options.schema),
+                  payload: attributeValidator(options.model),
                 },
               },
             };
@@ -71,7 +84,7 @@ export function joi(options: RouteOptions): Transformer {
             return {
               config: {
                 validate: {
-                  payload: attributeValidator(options.schema),
+                  payload: attributeValidator(options.model),
                   params: {
                     itemId: Joi[idType](),
                   },
@@ -98,9 +111,9 @@ export function joi(options: RouteOptions): Transformer {
               config: {
                 validate: {
                   payload: relationshipValidate(
-                    options.schema,
+                    options.model,
                     options.relationship,
-                    options.childSchema
+                    services.plump
                   ),
                 },
               },
@@ -120,16 +133,19 @@ export function joi(options: RouteOptions): Transformer {
               config: {
                 validate: {
                   params: {
+                    itemId: Joi[idType](),
                     childId: Joi[
-                      options.childSchema.attributes[
-                        options.childSchema.idAttribute
-                      ].type
+                      childIdType(
+                        options.model,
+                        options.relationship,
+                        services.plump
+                      )
                     ](),
                   },
                   payload: relationshipValidate(
-                    options.schema,
+                    options.model,
                     options.relationship,
-                    options.childSchema
+                    services.plump
                   ),
                 },
               },
@@ -140,6 +156,13 @@ export function joi(options: RouteOptions): Transformer {
                 validate: {
                   params: {
                     itemId: Joi[idType](),
+                    childId: Joi[
+                      childIdType(
+                        options.model,
+                        options.relationship,
+                        services.plump
+                      )
+                    ](),
                   },
                 },
               },
@@ -147,6 +170,6 @@ export function joi(options: RouteOptions): Transformer {
         }
       }
     }
-    return mergeOptions(i, joiBlock());
+    return mergeOptions({}, i, joiBlock());
   };
-}
+};

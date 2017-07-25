@@ -1,6 +1,6 @@
 import { StrutServer } from '../index';
 import * as SocketIO from 'socket.io';
-import { AuthenticationType } from '../authentication';
+import { AuthenticationType } from '../dataTypes';
 
 export interface SingletonRequest {
   responseKey: string;
@@ -11,12 +11,16 @@ export interface ChannelRequest {
   client: SocketIO.Socket;
 }
 
-export interface TestKeyAuthenticationRequest extends ChannelRequest, SingletonRequest {
+export interface TestKeyAuthenticationRequest
+  extends ChannelRequest,
+    SingletonRequest {
   request: 'testkey';
   key: string;
 }
 
-export interface StartAuthenticationRequest extends ChannelRequest, SingletonRequest {
+export interface StartAuthenticationRequest
+  extends ChannelRequest,
+    SingletonRequest {
   request: 'startauth';
   nonce: string;
 }

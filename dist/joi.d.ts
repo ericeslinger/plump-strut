@@ -1,2 +1,2 @@
 import { Generator } from './dataTypes';
-export declare const base: Generator;
+export declare const joi: Generator;

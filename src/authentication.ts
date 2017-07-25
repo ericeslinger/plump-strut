@@ -1,43 +1,16 @@
 import * as Joi from 'joi';
 import * as Hapi from 'hapi';
 import * as Bell from 'bell';
-import { StrutConfig, StrutServer } from './server';
+import {
+  TokenService,
+  AuthenticationStrategy,
+  StrutConfig,
+  StrutServices,
+} from './dataTypes';
 import { ModelData } from 'plump';
+import { StrutServer } from './server';
 
-export interface AuthenticationResponse {
-  response: string;
-  token: string;
-}
-
-export interface AuthenticationHandler {
-  (r: Hapi.Request, strut: StrutServer): Promise<AuthenticationResponse>;
-}
-
-export interface AuthenticationType {
-  name: string;
-  url: string;
-  iconUrl?: string;
-}
-
-export interface AuthenticationStrategy {
-  name: string;
-  handler: AuthenticationHandler;
-  iconUrl?: string;
-  strategy: {
-    provider: string;
-    password?: string;
-    cookie: string;
-    scope: string[];
-    clientId: string;
-    clientSecret: string;
-    isSecure: boolean;
-    forceHttps: boolean;
-    providerParams?: any;
-  };
-  nonceCookie?: Hapi.ServerStateCookieConfiguationObject;
-}
-
-function routeGen(options: AuthenticationStrategy, strut: StrutServer) {
+function routeGen(options: AuthenticationStrategy, strut: StrutServices) {
   const cookieOptions: Hapi.ServerStateCookieConfiguationObject = Object.assign(
     {},
     {
@@ -49,11 +22,11 @@ function routeGen(options: AuthenticationStrategy, strut: StrutServer) {
       clearInvalid: false, // remove invalid cookies
       strictHeader: true, // don't allow violations of RFC 6265
     },
-    options.nonceCookie,
+    options.nonceCookie
   );
   const routeHandler: Hapi.RouteHandler = (request, reply) => {
     return options.handler(request, strut).then(r => {
-      strut.services.io
+      strut.io
         .to(request.state[`${options.name}-nonce`].nonce)
         .emit(request.state[`${options.name}-nonce`].nonce, {
           status: 'success',
@@ -77,15 +50,6 @@ function routeGen(options: AuthenticationStrategy, strut: StrutServer) {
       },
     });
   };
-}
-
-export interface TokenService {
-  validate: (
-    token: string,
-    callback: (err: Error | null, credentials: any) => void,
-  ) => void;
-  tokenToUser: (token: string) => Promise<ModelData>;
-  userToToken: (user: ModelData) => Promise<string>;
 }
 
 export function rebindTokenValidator(t: TokenService) {
@@ -112,7 +76,7 @@ export function configureAuth(strut: StrutServer) {
             'nonce'
           ]}</body>
           </html>
-        `,
+        `
         )
           .type('text/html')
           .state(`${request.query['method']}-nonce`, {

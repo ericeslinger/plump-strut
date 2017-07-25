@@ -1,8 +1,16 @@
-import { Generator, Transformer, RouteOptions } from './dataTypes';
+import {
+  Generator,
+  Transformer,
+  RouteOptions,
+  StrutServices,
+} from './dataTypes';
 import * as Hapi from 'hapi';
 import * as mergeOptions from 'merge-options';
 
-export function base(options: RouteOptions): Transformer {
+export const base: Generator = (
+  options: RouteOptions,
+  services: StrutServices
+) => {
   return (i: Partial<Hapi.RouteConfiguration>) => {
     function routeBlock() {
       if (options.kind === 'attributes') {
@@ -71,6 +79,7 @@ export function base(options: RouteOptions): Transformer {
       }
     }
     return mergeOptions(
+      {},
       i,
       {
         config: {
@@ -80,4 +89,4 @@ export function base(options: RouteOptions): Transformer {
       routeBlock()
     );
   };
-}
+};

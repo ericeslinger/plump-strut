@@ -1,11 +1,61 @@
 import * as Hapi from 'hapi';
+import * as SocketIO from 'socket.io';
 import {
   Model,
   ModelReference,
   IndefiniteModelData,
   ModelData,
   ModelSchema,
+  Plump,
 } from 'plump';
+
+export interface AuthenticationResponse {
+  response: string;
+  token: string;
+}
+
+export interface AuthenticationHandler {
+  (r: Hapi.Request, strut: StrutServices): Promise<AuthenticationResponse>;
+}
+
+export interface StrutConfig {
+  models?: typeof Model[];
+  apiRoot: string;
+  apiProtocol: 'http' | 'https';
+  authTypes: AuthenticationStrategy[];
+  apiPort: number;
+  hostName: string;
+  authRoot: string;
+  routeOptions: Partial<RouteOptions>;
+  routeGenerators: {
+    [type: string]: Partial<RouteGenerator>;
+  };
+  defaultRouteGenerator?: RouteGenerator;
+}
+
+export interface AuthenticationType {
+  name: string;
+  url: string;
+  iconUrl?: string;
+}
+
+export interface AuthenticationStrategy {
+  name: string;
+  handler: AuthenticationHandler;
+  iconUrl?: string;
+  strategy: {
+    provider: string;
+    password?: string;
+    cookie: string;
+    scope: string[];
+    clientId: string;
+    clientSecret: string;
+    isSecure: boolean;
+    forceHttps: boolean;
+    providerParams?: any;
+  };
+  nonceCookie?: Hapi.ServerStateCookieConfiguationObject;
+}
 
 export interface StrutInnerConfig
   extends Hapi.RouteAdditionalConfigurationOptions {
@@ -23,7 +73,6 @@ export interface Transformer {
 export interface BasicRouteOptions {
   cors: Hapi.CorsConfigurationObject | boolean;
   authentication: string;
-  schema: ModelSchema;
   model: typeof Model;
   actorMapFn?: (m: ModelData) => ModelReference;
 }
@@ -46,8 +95,25 @@ export interface RelationshipRouteSelector extends BasicRouteSelector {
 export type RouteSelector = AttributeRouteSelector | RelationshipRouteSelector;
 export type RouteOptions = BasicRouteOptions & RouteSelector;
 
+export interface TokenService {
+  validate: (
+    token: string,
+    callback: (err: Error | null, credentials: any) => void
+  ) => void;
+  tokenToUser: (token: string) => Promise<ModelData>;
+  userToToken: (user: ModelData) => Promise<string>;
+}
+
+export interface StrutServices {
+  hapi?: Hapi.Server;
+  io?: SocketIO.Server;
+  plump?: Plump;
+  tokenStore?: TokenService;
+  [key: string]: any;
+}
+
 export interface Generator {
-  (opts: RouteOptions): Transformer;
+  (opts: RouteOptions, strut: StrutServices): Transformer;
 }
 
 export interface AbstractAuthorizeRequest {
@@ -198,5 +264,4 @@ export interface RouteGenerator {
   joi: Generator;
   authorize: Generator;
   handle: Generator;
-  package: Generator;
 }

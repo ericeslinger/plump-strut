@@ -1,4 +1,4 @@
-import { ModelSchema, ModelData, ModelReference } from 'plump';
+import { Model, ModelData, ModelReference, Plump } from 'plump';
 import * as Hapi from 'hapi';
 import * as mergeOptions from 'merge-options';
 import * as Joi from 'joi';
@@ -9,11 +9,13 @@ import {
   Transformer,
   RouteOptions,
   StrutRouteConfiguration,
+  StrutServices,
 } from './dataTypes';
 import { Oracle } from './oracle';
 
 function generateAuthRequest(
-  options: RouteOptions
+  options: RouteOptions,
+  services: StrutServices
 ): (r: Hapi.Request) => AuthorizeRequest {
   return (req: Hapi.Request) => {
     const getActor = options.actorMapFn
@@ -24,14 +26,14 @@ function generateAuthRequest(
         case 'create':
           return {
             data: req.payload,
-            target: { type: options.schema.name },
+            target: { type: options.model.type },
             kind: options.kind,
             action: options.action,
             actor: getActor(req.auth.credentials.user),
           };
         case 'read':
           return {
-            target: { type: options.schema.name, id: req.params.itemId },
+            target: { type: options.model.type, id: req.params.itemId },
             kind: options.kind,
             action: options.action,
             actor: getActor(req.auth.credentials.user),
@@ -39,7 +41,7 @@ function generateAuthRequest(
         case 'update':
           return {
             data: req.payload,
-            target: { type: options.schema.name, id: req.params.itemId },
+            target: { type: options.model.type, id: req.params.itemId },
             kind: options.kind,
             action: options.action,
             actor: getActor(req.auth.credentials.user),
@@ -47,20 +49,26 @@ function generateAuthRequest(
         case 'delete':
           return {
             data: req.payload,
-            target: { type: options.schema.name, id: req.params.itemId },
+            target: { type: options.model.type, id: req.params.itemId },
             kind: options.kind,
             action: options.action,
             actor: getActor(req.auth.credentials.user),
           };
         case 'query':
           return {
-            target: { type: options.schema.name },
+            target: { type: options.model.type },
             kind: options.kind,
             action: options.action,
             actor: getActor(req.auth.credentials.user),
           };
       }
     } else if (options.kind === 'relationship') {
+      const childModel =
+        services.plump.types[
+          options.model.schema.relationships[options.relationship].type.sides[
+            options.relationship
+          ].otherType
+        ];
       switch (options.action) {
         case 'create':
           return {
@@ -68,9 +76,9 @@ function generateAuthRequest(
             action: options.action,
             relationship: options.relationship,
             actor: getActor(req.auth.credentials.user),
-            target: { type: options.schema.name, id: req.params.itemId },
+            target: { type: options.model.type, id: req.params.itemId },
             meta: req.payload.meta,
-            child: { type: options.childSchema.name, id: req.payload.id },
+            child: { type: childModel.type, id: req.payload.id },
           };
         case 'read':
           return {
@@ -78,7 +86,7 @@ function generateAuthRequest(
             action: options.action,
             relationship: options.relationship,
             actor: getActor(req.auth.credentials.user),
-            target: { type: options.schema.name, id: req.params.itemId },
+            target: { type: options.model.type, id: req.params.itemId },
           };
         case 'update':
           return {
@@ -86,8 +94,8 @@ function generateAuthRequest(
             action: options.action,
             relationship: options.relationship,
             actor: getActor(req.auth.credentials.user),
-            target: { type: options.schema.name, id: req.params.itemId },
-            child: { type: options.childSchema.name, id: req.payload.id },
+            target: { type: options.model.type, id: req.params.itemId },
+            child: { type: childModel.type, id: req.payload.id },
             meta: req.payload.meta,
           };
         case 'delete':
@@ -96,25 +104,29 @@ function generateAuthRequest(
             action: options.action,
             relationship: options.relationship,
             actor: getActor(req.auth.credentials.user),
-            target: { type: options.schema.name, id: req.params.itemId },
-            child: { type: options.childSchema.name, id: req.payload.id },
+            target: { type: options.model.type, id: req.params.itemId },
+            child: { type: childModel.type, id: req.payload.id },
           };
       }
     }
   };
 }
 
-export function joi(options: RouteOptions, oracle: Oracle): Transformer {
-  return (i: Partial<StrutRouteConfiguration>) => {
-    if (oracle && oracle.authorizers[options.schema.name]) {
+export const authorize: Generator = (
+  options: RouteOptions,
+  services: StrutServices
+) => {
+  return (o: Partial<StrutRouteConfiguration>) => {
+    const i = mergeOptions({}, o);
+    if (services.oracle && services.oracle.authorizers[options.model.type]) {
       if (i.config.pre === undefined) {
         i.config.pre = [];
       }
-      const authMap = generateAuthRequest(options);
+      const authMap = generateAuthRequest(options, services);
       i.config.pre = i.config.pre.concat({
         assign: 'authorize',
         method: (req: Hapi.Request, reply: Hapi.Base_Reply) => {
-          oracle.dispatch(authMap(req)).then(v => {
+          services.oracle.dispatch(authMap(req)).then(v => {
             if (v.result === true) {
               reply(true);
             } else {
@@ -126,4 +138,4 @@ export function joi(options: RouteOptions, oracle: Oracle): Transformer {
     }
     return i;
   };
-}
+};
