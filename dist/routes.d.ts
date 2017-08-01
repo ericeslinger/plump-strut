@@ -25,7 +25,7 @@ export declare function createRoutes(opts?: Partial<RouteOptions>): {
             method: string;
             path: string;
             config: {
-                cors: Hapi.CorsConfigurationObject;
+                cors: boolean | Hapi.CorsConfigurationObject;
             };
         };
     };
@@ -40,7 +40,7 @@ export declare function createRoutes(opts?: Partial<RouteOptions>): {
             method: string;
             path: string;
             config: {
-                cors: Hapi.CorsConfigurationObject;
+                cors: boolean | Hapi.CorsConfigurationObject;
             };
         };
     };
@@ -49,7 +49,7 @@ export declare function createRoutes(opts?: Partial<RouteOptions>): {
             method: string;
             path: string;
             config: {
-                cors: Hapi.CorsConfigurationObject;
+                cors: boolean | Hapi.CorsConfigurationObject;
             };
         };
     };
@@ -61,7 +61,7 @@ export declare function createRoutes(opts?: Partial<RouteOptions>): {
             method: string;
             path: string;
             config: {
-                cors: Hapi.CorsConfigurationObject;
+                cors: boolean | Hapi.CorsConfigurationObject;
                 payload: {
                     output: string;
                     parse: boolean;
@@ -80,7 +80,7 @@ export declare function createRoutes(opts?: Partial<RouteOptions>): {
             method: string;
             path: string;
             config: {
-                cors: Hapi.CorsConfigurationObject;
+                cors: boolean | Hapi.CorsConfigurationObject;
                 payload: {
                     output: string;
                     parse: boolean;
@@ -98,7 +98,7 @@ export declare function createRoutes(opts?: Partial<RouteOptions>): {
             method: string;
             path: string;
             config: {
-                cors: Hapi.CorsConfigurationObject;
+                cors: boolean | Hapi.CorsConfigurationObject;
             };
         };
     };
@@ -113,7 +113,7 @@ export declare function createRoutes(opts?: Partial<RouteOptions>): {
             method: string;
             path: string;
             config: {
-                cors: Hapi.CorsConfigurationObject;
+                cors: boolean | Hapi.CorsConfigurationObject;
                 payload: {
                     output: string;
                     parse: boolean;
@@ -133,7 +133,7 @@ export declare function createRoutes(opts?: Partial<RouteOptions>): {
             method: string;
             path: string;
             config: {
-                cors: Hapi.CorsConfigurationObject;
+                cors: boolean | Hapi.CorsConfigurationObject;
                 payload: {
                     output: string;
                     parse: boolean;
@@ -153,7 +153,7 @@ export declare function createRoutes(opts?: Partial<RouteOptions>): {
             method: string;
             path: string;
             config: {
-                cors: Hapi.CorsConfigurationObject;
+                cors: boolean | Hapi.CorsConfigurationObject;
             };
         };
     };
