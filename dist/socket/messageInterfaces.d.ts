@@ -1,5 +1,5 @@
 import { StrutServer } from '../index';
-import { AuthenticationType } from '../authentication';
+import { AuthenticationType } from '../dataTypes';
 export interface SingletonRequest {
     responseKey: string;
 }

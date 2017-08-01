@@ -2,21 +2,13 @@
 /* eslint no-shadow: 0 */
 
 import { Plump, MemoryStore } from 'plump';
-import { BaseController, StrutServer } from '../src/index';
+import { StrutServer } from '../src/index';
 import { TestType } from './testType';
 
 import * as chai from 'chai';
 import * as Hapi from 'hapi';
 
 import 'mocha';
-
-declare global {
-  namespace Chai {
-    interface Assertion {
-      nested: Assertion;
-    }
-  }
-}
 
 declare module 'hapi' {
   interface Server {
@@ -28,40 +20,42 @@ declare module 'hapi' {
           prefix: string;
           vhost?: string | string[];
         };
-      },
+      }
     ): Promise<any>;
   }
 }
 
 const expect = chai.expect;
 describe('HasMany Plump Routes', () => {
-  const context = {
-    ms: new MemoryStore({ terminal: true }),
-    plump: new Plump(),
+  const memStore = new MemoryStore({ terminal: true });
+  const testContext: {
+    ms: MemoryStore;
+    plump: Plump<MemoryStore>;
+    strut: StrutServer;
+  } = {
+    ms: memStore,
+    plump: new Plump(memStore),
     strut: null,
   };
 
   before(() => {
-    return context.plump
-      .setTerminal(context.ms)
-      .then(() => context.plump.addType(TestType))
-      .then(() => {
-        context.strut = new StrutServer(context.plump, {
-          apiPort: 4000,
-          apiProtocol: 'http',
-          apiRoot: '/api',
-          authTypes: [],
-        });
-        return context.strut.initialize();
+    return testContext.plump.addType(TestType).then(() => {
+      testContext.strut = new StrutServer(testContext.plump, {
+        apiPort: 4000,
+        apiProtocol: 'http',
+        apiRoot: '/api',
+        authTypes: [],
       });
+      return testContext.strut.initialize();
+    });
   });
 
   it('C', () => {
-    const one = new TestType({ name: 'potato' }, context.plump);
+    const one = new TestType({ name: 'potato' }, testContext.plump);
     return one
       .save()
       .then(() => {
-        return context.strut.hapi.inject({
+        return testContext.strut.services.hapi.inject({
           method: 'PUT',
           url: `/api/${TestType.type}/${one.id}/children`,
           payload: JSON.stringify({ id: 100 }),
@@ -74,13 +68,13 @@ describe('HasMany Plump Routes', () => {
           .then(v =>
             expect(v.relationships.children).to.deep.equal([
               { type: TestType.type, id: 100 },
-            ]),
+            ])
           );
       });
   });
 
   it('R', () => {
-    const one = new TestType({ name: 'potato' }, context.plump);
+    const one = new TestType({ name: 'potato' }, testContext.plump);
     return one
       .save()
       .then(() => one.add('children', { id: 100 }).save())
@@ -88,10 +82,10 @@ describe('HasMany Plump Routes', () => {
       .then(v =>
         expect(v.relationships.children).to.deep.equal([
           { type: TestType.type, id: 100 },
-        ]),
+        ])
       )
       .then(() => {
-        return context.strut.hapi.inject({
+        return testContext.strut.services.hapi.inject({
           method: 'GET',
           url: `/api/${TestType.type}/${one.id}/children`,
         });
@@ -99,17 +93,17 @@ describe('HasMany Plump Routes', () => {
       .then(response => {
         expect(response).to.have.property('statusCode', 200);
         expect(
-          JSON.parse(response.payload).relationships.children,
+          JSON.parse(response.payload).relationships.children
         ).to.deep.equal([{ type: TestType.type, id: 100 }]);
       });
   });
 
   it('U', () => {
-    const one = new TestType({ name: 'potato' }, context.plump);
+    const one = new TestType({ name: 'potato' }, testContext.plump);
     return one
       .save()
       .then(() =>
-        one.add('valenceChildren', { id: 100, meta: { perm: 2 } }).save(),
+        one.add('valenceChildren', { id: 100, meta: { perm: 2 } }).save()
       )
       .then(() => one.get('relationships.valenceChildren'))
       .then(v => {
@@ -118,7 +112,7 @@ describe('HasMany Plump Routes', () => {
         ]);
       })
       .then(() => {
-        return context.strut.hapi.inject({
+        return testContext.strut.services.hapi.inject({
           method: 'PATCH',
           url: `/api/${TestType.type}/${one.id}/valenceChildren/100`,
           payload: JSON.stringify({ meta: { perm: 3 } }),
@@ -126,19 +120,19 @@ describe('HasMany Plump Routes', () => {
       })
       .then(response => {
         expect(response).to.have.property('statusCode', 200);
-        return context.plump
+        return testContext.plump
           .find({ type: 'tests', id: one.id })
           .get('relationships.valenceChildren');
       })
       .then(v =>
         expect(v.relationships.valenceChildren).to.deep.equal([
           { type: TestType.type, id: 100, meta: { perm: 3 } },
-        ]),
+        ])
       );
   });
 
   it('D', () => {
-    const one = new TestType({ name: 'potato' }, context.plump);
+    const one = new TestType({ name: 'potato' }, testContext.plump);
     return one
       .save()
       .then(() => one.add('children', { id: 100 }).save())
@@ -146,17 +140,17 @@ describe('HasMany Plump Routes', () => {
       .then(v =>
         expect(v.relationships.children).to.deep.equal([
           { type: TestType.type, id: 100 },
-        ]),
+        ])
       )
       .then(() => {
-        return context.strut.hapi.inject({
+        return testContext.strut.services.hapi.inject({
           method: 'DELETE',
           url: `/api/${TestType.type}/${one.id}/children/100`,
         });
       })
       .then(response => {
         expect(response).to.have.property('statusCode', 200);
-        return context.plump
+        return testContext.plump
           .find({ type: 'tests', id: one.id })
           .get('relationships.children');
       })

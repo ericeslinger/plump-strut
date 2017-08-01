@@ -1,23 +1,23 @@
 import * as Hapi from 'hapi';
 import * as SocketIO from 'socket.io';
 import * as Bell from 'bell';
-import { Plump, Model } from 'plump';
-import { BaseController } from './base';
-import { RouteOptions } from './routes';
-import { dispatch } from './socket/channels';
-import { configureAuth, AuthenticationStrategy } from './authentication';
+import * as bearer from 'hapi-auth-bearer-token';
 import * as mergeOptions from 'merge-options';
+import { Plump, Model, TerminalStore } from 'plump';
+import { dispatch } from './socket/channels';
+import { configureAuth } from './authentication';
+import {
+  TokenService,
+  StrutServices,
+  StrutConfig,
+  AuthenticationStrategy,
+} from './dataTypes';
 
-export interface StrutConfig {
-  models?: typeof Model[];
-  apiRoot: string;
-  apiProtocol: 'http' | 'https';
-  authTypes: AuthenticationStrategy[];
-  apiPort: number;
-  hostName: string;
-  authRoot: string;
-  routeOptions: Partial<RouteOptions>;
-}
+import { base } from './base';
+import { joi } from './joi';
+import { authorize } from './authorize';
+import { handle } from './handle';
+import { plugin } from './plugin';
 
 const defaultSettings: StrutConfig = {
   apiRoot: '/api',
@@ -27,27 +27,39 @@ const defaultSettings: StrutConfig = {
   hostName: 'localhost',
   apiProtocol: 'https',
   routeOptions: {},
+  defaultRouteGenerator: {
+    base,
+    joi,
+    authorize,
+    handle,
+  },
+  routeGenerators: {},
 };
-
-export interface StrutServices {
-  hapi: Hapi.Server;
-  io: SocketIO.Server;
-  plump: Plump;
-  [key: string]: any;
-}
 
 export class StrutServer {
   public config: StrutConfig;
-  public services: Partial<StrutServices> = {};
 
-  constructor(plump: Plump, conf: Partial<StrutConfig>) {
+  constructor(
+    plump: Plump,
+    conf: Partial<StrutConfig>,
+    public services: StrutServices = {}
+  ) {
     this.services.hapi = new Hapi.Server();
     this.services.plump = plump;
     this.config = mergeOptions({}, defaultSettings, conf);
   }
 
   preRoute() {
-    return Promise.resolve();
+    return Promise.resolve().then(() => {
+      if (this.services.tokenStore) {
+        return this.services.hapi.register(bearer).then(() =>
+          this.services.hapi.auth.strategy('token', 'bearer-access-token', {
+            validateFunc: (token, callback) =>
+              this.services.tokenStore.validate(token, callback),
+          })
+        );
+      }
+    });
   }
 
   preInit() {
@@ -73,16 +85,26 @@ export class StrutServer {
       .then(() => this.preRoute())
       .then(() => {
         return Promise.all(
-          (this.config.models || this.services.plump.getTypes()).map(t => {
-            return this.services.hapi.register(
-              new BaseController(
-                this.services.plump,
-                t,
-                this.config.routeOptions,
-              ).plugin as Hapi.PluginFunction<{}>,
-              { routes: { prefix: `${this.config.apiRoot}/${t.type}` } },
-            );
-          }),
+          (this.config.models || this.services.plump.getTypes())
+            .map((t: typeof Model) => {
+              // debugger;
+              return this.services.hapi.register(
+                plugin(
+                  Object.assign(
+                    {},
+                    this.config.defaultRouteGenerator,
+                    this.config.routeGenerators[t.type]
+                  ),
+                  {
+                    cors: true,
+                    authentication: 'token',
+                    model: t,
+                  },
+                  this.services
+                ),
+                { routes: { prefix: `${this.config.apiRoot}/${t.type}` } }
+              );
+            })
         );
       })
       .then(() =>
@@ -90,8 +112,8 @@ export class StrutServer {
           configureAuth(this) as Hapi.PluginFunction<{}>,
           {
             routes: { prefix: this.config.authRoot },
-          },
-        ),
+          }
+        )
       )
       .then(() => {
         this.services.hapi.ext('onPreAuth', (request, reply) => {
