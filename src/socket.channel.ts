@@ -1,11 +1,11 @@
 import * as SocketIO from 'socket.io';
-import { StrutServer } from '../index';
 import {
-  SingletonRequest,
   RequestHandler,
+  StrutServer,
+  SingletonRequest,
   ChannelRequest,
-} from './messageInterfaces';
-import { dispatch as authChannel } from './authentication.channel';
+} from './dataTypes';
+import { authenticationChannelDispatch as authChannel } from './authentication.channel';
 
 function singletonDispatch(
   handler: RequestHandler,

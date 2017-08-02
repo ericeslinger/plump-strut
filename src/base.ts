@@ -1,5 +1,5 @@
 import {
-  Generator,
+  SegmentGenerator,
   Transformer,
   RouteOptions,
   StrutServices,
@@ -7,9 +7,9 @@ import {
 import * as Hapi from 'hapi';
 import * as mergeOptions from 'merge-options';
 
-export const base: Generator = (
+export const base: SegmentGenerator = (
   options: RouteOptions,
-  services: StrutServices
+  services: StrutServices,
 ) => {
   return (i: Partial<Hapi.RouteConfiguration>) => {
     function routeBlock() {
@@ -86,7 +86,7 @@ export const base: Generator = (
           cors: options.cors ? options.cors : false,
         },
       },
-      routeBlock()
+      routeBlock(),
     );
   };
 };

@@ -1,12 +1,13 @@
+import * as SocketIO from 'socket.io';
 import {
+  ChannelRequest,
+  StrutServer,
+  SingletonRequest,
   AuthenticationRequest,
   AuthenticationResponse,
-  Response,
-} from './messageInterfaces';
-import { StrutServer } from '../server';
-import * as SocketIO from 'socket.io';
+} from './dataTypes';
 
-export function dispatch(
+export function authenticationChannelDispatch(
   msg: AuthenticationRequest,
   server: StrutServer,
 ): Promise<AuthenticationResponse> {

@@ -1,2 +1,2 @@
-import { StrutServer } from '../index';
+import { StrutServer } from './dataTypes';
 export declare function dispatch(s: StrutServer): void;

@@ -1,2 +1,2 @@
-import { Generator } from './dataTypes';
-export declare const authorize: Generator;
+import { SegmentGenerator } from './dataTypes';
+export declare const authorize: SegmentGenerator;

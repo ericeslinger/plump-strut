@@ -9,15 +9,47 @@ import {
   Plump,
 } from 'plump';
 
-export interface AuthenticationResponse {
-  response: string;
-  token: string;
+export interface RoutedItem extends Hapi.Request {
+  pre: {
+    item: {
+      ref: Model<ModelData>;
+      data: ModelData;
+    };
+  };
 }
 
-export interface AuthenticationHandler {
-  (r: Hapi.Request, strut: StrutServices): Promise<AuthenticationResponse>;
+export interface StrutServer {
+  config: StrutConfig;
+  services: StrutServices;
+  baseUrl: () => string;
+  initialize: () => Promise<void>;
+  preInit: () => Promise<void>;
+  preRoute: () => Promise<void>;
 }
 
+export interface RequestHandler {
+  (m: ChannelRequest, s: StrutServer): Promise<Response>;
+}
+
+export interface StrutInnerConfig
+  extends Hapi.RouteAdditionalConfigurationOptions {
+  pre: Hapi.RoutePrerequisiteObjects[];
+}
+
+export interface StrutRouteConfiguration extends Hapi.RouteConfiguration {
+  config: StrutInnerConfig;
+}
+
+export interface BasicRouteOptions {
+  cors: Hapi.CorsConfigurationObject | boolean;
+  authentication: string;
+  model: typeof Model;
+  actorMapFn?: (m: ModelData) => ModelReference;
+}
+export interface BasicRouteSelector {
+  kind: string;
+  action: string;
+}
 export interface StrutConfig {
   models?: typeof Model[];
   apiRoot: string;
@@ -33,10 +65,98 @@ export interface StrutConfig {
   defaultRouteGenerator?: RouteGenerator;
 }
 
+export interface AttributeRouteSelector extends BasicRouteSelector {
+  kind: 'attributes';
+  action: 'create' | 'read' | 'update' | 'delete' | 'query';
+}
+
+export interface RelationshipRouteSelector extends BasicRouteSelector {
+  kind: 'relationship';
+  action: 'create' | 'read' | 'update' | 'delete';
+  relationship: string;
+}
+
+export type RouteSelector = AttributeRouteSelector | RelationshipRouteSelector;
+export type RouteOptions = BasicRouteOptions & RouteSelector;
+
+export interface Transformer {
+  (block: Partial<StrutRouteConfiguration>): Partial<StrutRouteConfiguration>;
+}
+
+export interface SegmentGenerator {
+  (opts: RouteOptions, strut: StrutServices): Transformer;
+}
+
+export interface RouteGenerator {
+  base: SegmentGenerator;
+  joi: SegmentGenerator;
+  authorize: SegmentGenerator;
+  handle: SegmentGenerator;
+}
+
+export interface SingletonRequest {
+  responseKey: string;
+}
+
+export interface ChannelRequest {
+  request: string;
+  client: SocketIO.Socket;
+}
+
+export interface TestKeyAuthenticationRequest
+  extends ChannelRequest,
+    SingletonRequest {
+  request: 'testkey';
+  key: string;
+}
+
+export interface StartAuthenticationRequest
+  extends ChannelRequest,
+    SingletonRequest {
+  request: 'startauth';
+  nonce: string;
+}
+
+export type AuthenticationRequest =
+  | TestKeyAuthenticationRequest
+  | StartAuthenticationRequest;
+
+export interface Response {
+  response: string;
+}
+
+export interface InvalidRequestResponse extends Response {
+  response: 'invalidRequest';
+}
+
+export interface StartResponse extends Response {
+  response: 'startauth';
+  types: AuthenticationType[];
+}
+
+export interface TestResponse extends Response {
+  response: 'testkey';
+  auth: boolean;
+}
+
+export type AuthenticationResponse =
+  | InvalidRequestResponse
+  | StartResponse
+  | TestResponse;
+
 export interface AuthenticationType {
   name: string;
   url: string;
   iconUrl?: string;
+}
+
+export interface RestAuthenticationResponse {
+  response: string;
+  token: string;
+}
+
+export interface AuthenticationHandler {
+  (r: Hapi.Request, strut: StrutServices): Promise<RestAuthenticationResponse>;
 }
 
 export interface AuthenticationStrategy {
@@ -57,48 +177,10 @@ export interface AuthenticationStrategy {
   nonceCookie?: Hapi.ServerStateCookieConfiguationObject;
 }
 
-export interface StrutInnerConfig
-  extends Hapi.RouteAdditionalConfigurationOptions {
-  pre: Hapi.RoutePrerequisiteObjects[];
-}
-
-export interface StrutRouteConfiguration extends Hapi.RouteConfiguration {
-  config: StrutInnerConfig;
-}
-
-export interface Transformer {
-  (block: Partial<StrutRouteConfiguration>): Partial<StrutRouteConfiguration>;
-}
-
-export interface BasicRouteOptions {
-  cors: Hapi.CorsConfigurationObject | boolean;
-  authentication: string;
-  model: typeof Model;
-  actorMapFn?: (m: ModelData) => ModelReference;
-}
-export interface BasicRouteSelector {
-  kind: string;
-  action: string;
-}
-
-export interface AttributeRouteSelector extends BasicRouteSelector {
-  kind: 'attributes';
-  action: 'create' | 'read' | 'update' | 'delete' | 'query';
-}
-
-export interface RelationshipRouteSelector extends BasicRouteSelector {
-  kind: 'relationship';
-  action: 'create' | 'read' | 'update' | 'delete';
-  relationship: string;
-}
-
-export type RouteSelector = AttributeRouteSelector | RelationshipRouteSelector;
-export type RouteOptions = BasicRouteOptions & RouteSelector;
-
 export interface TokenService {
   validate: (
     token: string,
-    callback: (err: Error | null, credentials: any) => void
+    callback: (err: Error | null, credentials: any) => void,
   ) => void;
   tokenToUser: (token: string) => Promise<ModelData>;
   userToToken: (user: ModelData) => Promise<string>;
@@ -110,10 +192,6 @@ export interface StrutServices {
   plump?: Plump;
   tokenStore?: TokenService;
   [key: string]: any;
-}
-
-export interface Generator {
-  (opts: RouteOptions, strut: StrutServices): Transformer;
 }
 
 export interface AbstractAuthorizeRequest {
@@ -257,11 +335,4 @@ export interface KeyService {
   test(key: string): Promise<boolean>;
   get<T>(key: string): Promise<T | null>;
   set<T>(key: string, val: T): Promise<T | null>;
-}
-
-export interface RouteGenerator {
-  base: Generator;
-  joi: Generator;
-  authorize: Generator;
-  handle: Generator;
 }

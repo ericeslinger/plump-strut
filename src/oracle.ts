@@ -16,13 +16,6 @@ export class Oracle {
 
   constructor(public keyService?: KeyService) {}
 
-  // TODO: move this to strut.
-
-  // package is called in strut, and used to transform the request
-  // from a hapi.request object into an AuthorizeRequest.
-  // the default would be a passthrough, but you could do something like
-  // (we do in trellis): { User } => { Profile } map.
-
   addAuthorizer(auth: AuthorizerDefinition, forType: string) {
     this.authorizers[forType] = auth;
   }
@@ -36,7 +29,7 @@ export class Oracle {
               (res: FinalAuthorizeResponse[]) =>
                 request.combinator === 'or'
                   ? res.some(v => v.result)
-                  : res.every(v => v.result)
+                  : res.every(v => v.result),
             )
             .then<FinalAuthorizeResponse>(f => ({ kind: 'final', result: f }));
         } else {
