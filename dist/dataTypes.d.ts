@@ -146,11 +146,10 @@ export interface StrutServices {
 }
 export interface AbstractAuthorizeRequest {
     kind: 'attributes' | 'relationship' | 'compound';
-    actor: ModelReference;
-    action: string;
 }
 export interface AbstractAttributesAuthorizeRequest extends AbstractAuthorizeRequest {
     action: 'create' | 'read' | 'update' | 'delete' | 'query';
+    actor: ModelReference;
     kind: 'attributes';
 }
 export interface AttributesReadAuthorizeRequest extends AbstractAttributesAuthorizeRequest {
@@ -163,7 +162,7 @@ export interface AttributesDeleteAuthorizeRequest extends AbstractAttributesAuth
 }
 export interface AttributesCreateAuthorizeRequest extends AbstractAttributesAuthorizeRequest {
     action: 'create';
-    data: IndefiniteModelData;
+    data?: IndefiniteModelData;
     target: {
         type: string;
     };
@@ -177,11 +176,12 @@ export interface AttributesQueryAuthorizeRequest extends AbstractAttributesAutho
 export interface AttributesUpdateAuthorizeRequest extends AbstractAttributesAuthorizeRequest {
     action: 'update';
     target: ModelReference;
-    data: ModelData;
+    data?: ModelData;
 }
-export declare type AttributesAuthorizeRequest = AttributesCreateAuthorizeRequest | AttributesReadAuthorizeRequest | AttributesUpdateAuthorizeRequest | AttributesQueryAuthorizeRequest | AttributesDeleteAuthorizeRequest;
+export declare type AttributesAuthorizeRequest = AttributesCreateAuthorizeRequest | AttributesReadAuthorizeRequest | AttributesUpdateAuthorizeRequest | AttributesDeleteAuthorizeRequest | AttributesQueryAuthorizeRequest;
 export interface AbstractRelationshipAuthorizeRequest extends AbstractAuthorizeRequest {
     kind: 'relationship';
+    actor: ModelReference;
     action: 'create' | 'read' | 'update' | 'delete';
     relationship: string;
     target: ModelReference;
