@@ -5,7 +5,7 @@ import * as Joi from 'joi';
 import * as Boom from 'boom';
 import {
   AuthorizeRequest,
-  Generator,
+  SegmentGenerator,
   Transformer,
   RouteOptions,
   StrutRouteConfiguration,
@@ -15,7 +15,7 @@ import { Oracle } from './oracle';
 
 function generateAuthRequest(
   options: RouteOptions,
-  services: StrutServices
+  services: StrutServices,
 ): (r: Hapi.Request) => AuthorizeRequest {
   return (req: Hapi.Request) => {
     const getActor = options.actorMapFn
@@ -112,9 +112,9 @@ function generateAuthRequest(
   };
 }
 
-export const authorize: Generator = (
+export const authorize: SegmentGenerator = (
   options: RouteOptions,
-  services: StrutServices
+  services: StrutServices,
 ) => {
   return (o: Partial<StrutRouteConfiguration>) => {
     const i = mergeOptions({}, o);

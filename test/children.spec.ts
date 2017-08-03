@@ -2,7 +2,7 @@
 /* eslint no-shadow: 0 */
 
 import { Plump, MemoryStore } from 'plump';
-import { StrutServer } from '../src/index';
+import { Strut } from '../src/index';
 import { TestType } from './testType';
 
 import * as chai from 'chai';
@@ -20,7 +20,7 @@ declare module 'hapi' {
           prefix: string;
           vhost?: string | string[];
         };
-      }
+      },
     ): Promise<any>;
   }
 }
@@ -31,7 +31,7 @@ describe('HasMany Plump Routes', () => {
   const testContext: {
     ms: MemoryStore;
     plump: Plump<MemoryStore>;
-    strut: StrutServer;
+    strut: Strut;
   } = {
     ms: memStore,
     plump: new Plump(memStore),
@@ -40,7 +40,7 @@ describe('HasMany Plump Routes', () => {
 
   before(() => {
     return testContext.plump.addType(TestType).then(() => {
-      testContext.strut = new StrutServer(testContext.plump, {
+      testContext.strut = new Strut(testContext.plump, {
         apiPort: 4000,
         apiProtocol: 'http',
         apiRoot: '/api',
@@ -68,7 +68,7 @@ describe('HasMany Plump Routes', () => {
           .then(v =>
             expect(v.relationships.children).to.deep.equal([
               { type: TestType.type, id: 100 },
-            ])
+            ]),
           );
       });
   });
@@ -82,7 +82,7 @@ describe('HasMany Plump Routes', () => {
       .then(v =>
         expect(v.relationships.children).to.deep.equal([
           { type: TestType.type, id: 100 },
-        ])
+        ]),
       )
       .then(() => {
         return testContext.strut.services.hapi.inject({
@@ -93,7 +93,7 @@ describe('HasMany Plump Routes', () => {
       .then(response => {
         expect(response).to.have.property('statusCode', 200);
         expect(
-          JSON.parse(response.payload).relationships.children
+          JSON.parse(response.payload).relationships.children,
         ).to.deep.equal([{ type: TestType.type, id: 100 }]);
       });
   });
@@ -103,7 +103,7 @@ describe('HasMany Plump Routes', () => {
     return one
       .save()
       .then(() =>
-        one.add('valenceChildren', { id: 100, meta: { perm: 2 } }).save()
+        one.add('valenceChildren', { id: 100, meta: { perm: 2 } }).save(),
       )
       .then(() => one.get('relationships.valenceChildren'))
       .then(v => {
@@ -127,7 +127,7 @@ describe('HasMany Plump Routes', () => {
       .then(v =>
         expect(v.relationships.valenceChildren).to.deep.equal([
           { type: TestType.type, id: 100, meta: { perm: 3 } },
-        ])
+        ]),
       );
   });
 
@@ -140,7 +140,7 @@ describe('HasMany Plump Routes', () => {
       .then(v =>
         expect(v.relationships.children).to.deep.equal([
           { type: TestType.type, id: 100 },
-        ])
+        ]),
       )
       .then(() => {
         return testContext.strut.services.hapi.inject({

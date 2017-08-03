@@ -2,13 +2,13 @@ import * as Joi from 'joi';
 import * as Hapi from 'hapi';
 import * as Bell from 'bell';
 import {
-  TokenService,
-  AuthenticationStrategy,
   StrutConfig,
+  AuthenticationStrategy,
+  TokenService,
   StrutServices,
 } from './dataTypes';
 import { ModelData } from 'plump';
-import { StrutServer } from './server';
+import { StrutServer } from './dataTypes';
 
 function routeGen(options: AuthenticationStrategy, strut: StrutServices) {
   const cookieOptions: Hapi.ServerStateCookieConfiguationObject = Object.assign(
@@ -22,7 +22,7 @@ function routeGen(options: AuthenticationStrategy, strut: StrutServices) {
       clearInvalid: false, // remove invalid cookies
       strictHeader: true, // don't allow violations of RFC 6265
     },
-    options.nonceCookie
+    options.nonceCookie,
   );
   const routeHandler: Hapi.RouteHandler = (request, reply) => {
     return options.handler(request, strut).then(r => {
@@ -76,7 +76,7 @@ export function configureAuth(strut: StrutServer) {
             'nonce'
           ]}</body>
           </html>
-        `
+        `,
         )
           .type('text/html')
           .state(`${request.query['method']}-nonce`, {

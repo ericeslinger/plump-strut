@@ -1,12 +1,12 @@
 import { Plump } from 'plump';
-import { StrutServices, StrutConfig } from './dataTypes';
-export declare class StrutServer {
+import { StrutConfig, StrutServices, StrutServer } from './dataTypes';
+export declare class Strut implements StrutServer {
     services: StrutServices;
     config: StrutConfig;
     constructor(plump: Plump, conf: Partial<StrutConfig>, services?: StrutServices);
     preRoute(): Promise<void>;
     preInit(): Promise<void>;
-    initialize(): Promise<void>;
+    initialize(): any;
     baseUrl(): string;
     start(): Promise<Error>;
 }

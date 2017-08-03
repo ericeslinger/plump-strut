@@ -1,6 +1,6 @@
 import * as Hapi from 'hapi';
 import { TokenService } from './dataTypes';
-import { StrutServer } from './server';
+import { StrutServer } from './dataTypes';
 export declare function rebindTokenValidator(t: TokenService): {
     validateFunc: (token: any, callback: any) => void;
 };

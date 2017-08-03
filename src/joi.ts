@@ -1,5 +1,5 @@
 import {
-  Generator,
+  SegmentGenerator,
   Transformer,
   RouteOptions,
   StrutServices,
@@ -52,9 +52,9 @@ function childIdType(m: typeof Model, relationship: string, p: Plump) {
   return c.schema.attributes[c.schema.idAttribute].type;
 }
 
-export const joi: Generator = (
+export const joi: SegmentGenerator = (
   options: RouteOptions,
-  services: StrutServices
+  services: StrutServices,
 ) => {
   const idType =
     options.model.schema.attributes[options.model.schema.idAttribute].type;
@@ -113,7 +113,7 @@ export const joi: Generator = (
                   payload: relationshipValidate(
                     options.model,
                     options.relationship,
-                    services.plump
+                    services.plump,
                   ),
                 },
               },
@@ -138,14 +138,14 @@ export const joi: Generator = (
                       childIdType(
                         options.model,
                         options.relationship,
-                        services.plump
+                        services.plump,
                       )
                     ](),
                   },
                   payload: relationshipValidate(
                     options.model,
                     options.relationship,
-                    services.plump
+                    services.plump,
                   ),
                 },
               },
@@ -160,7 +160,7 @@ export const joi: Generator = (
                       childIdType(
                         options.model,
                         options.relationship,
-                        services.plump
+                        services.plump,
                       )
                     ](),
                   },

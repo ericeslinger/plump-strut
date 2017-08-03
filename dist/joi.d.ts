@@ -1,2 +1,2 @@
-import { Generator } from './dataTypes';
-export declare const joi: Generator;
+import { SegmentGenerator } from './dataTypes';
+export declare const joi: SegmentGenerator;

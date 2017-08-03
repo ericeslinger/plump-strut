@@ -1,6 +1,7 @@
 import {
-  Generator,
+  SegmentGenerator,
   Transformer,
+  RoutedItem,
   RouteOptions,
   StrutRouteConfiguration,
   StrutServices,
@@ -10,20 +11,11 @@ import * as Hapi from 'hapi';
 import * as Boom from 'boom';
 import * as mergeOptions from 'merge-options';
 
-export interface RoutedItem extends Hapi.Request {
-  pre: {
-    item: {
-      ref: Model<ModelData>;
-      data: ModelData;
-    };
-  };
-}
-
 function appendLoadHandler(
   pre: any[] = [],
   model: typeof Model,
   plump: Plump,
-  toLoad: string[] = ['attributes']
+  toLoad: string[] = ['attributes'],
 ) {
   return pre.concat({
     method: (request: Hapi.Request, reply: Hapi.Base_Reply) => {
@@ -56,9 +48,9 @@ function appendLoadHandler(
   });
 }
 
-export const handle: Generator = (
+export const handle: SegmentGenerator = (
   options: RouteOptions,
-  services: StrutServices
+  services: StrutServices,
 ) => {
   return (i: Partial<StrutRouteConfiguration>) => {
     function handleBlock(): Partial<StrutRouteConfiguration> {
@@ -69,7 +61,7 @@ export const handle: Generator = (
               handler: (request: Hapi.Request, reply: Hapi.Base_Reply) => {
                 const created = new options.model(
                   request.payload.attributes,
-                  services.plump
+                  services.plump,
                 );
                 return created.save().then(v => reply(v));
               },
@@ -83,7 +75,7 @@ export const handle: Generator = (
                 pre: appendLoadHandler(
                   i.config.pre,
                   options.model,
-                  services.plump
+                  services.plump,
                 ),
               },
             };
@@ -99,7 +91,7 @@ export const handle: Generator = (
                 pre: appendLoadHandler(
                   i.config.pre,
                   options.model,
-                  services.plump
+                  services.plump,
                 ),
               },
             };
@@ -114,7 +106,7 @@ export const handle: Generator = (
                 pre: appendLoadHandler(
                   i.config.pre,
                   options.model,
-                  services.plump
+                  services.plump,
                 ),
               },
             };
@@ -139,7 +131,7 @@ export const handle: Generator = (
                 pre: appendLoadHandler(
                   i.config.pre,
                   options.model,
-                  services.plump
+                  services.plump,
                 ),
               },
             };
@@ -153,7 +145,7 @@ export const handle: Generator = (
                   i.config.pre,
                   options.model,
                   services.plump,
-                  ['attributes', `relationships.${options.relationship}`]
+                  ['attributes', `relationships.${options.relationship}`],
                 ),
               },
             };
@@ -166,7 +158,7 @@ export const handle: Generator = (
                     Object.assign({}, request.payload, {
                       // prevent the user from posting "modify id:2 to the route /item/children/1"
                       id: request.params.childId,
-                    })
+                    }),
                   )
                   .save()
                   .then(v => reply(v));
@@ -175,7 +167,7 @@ export const handle: Generator = (
                 pre: appendLoadHandler(
                   i.config.pre,
                   options.model,
-                  services.plump
+                  services.plump,
                 ),
               },
             };
@@ -194,7 +186,7 @@ export const handle: Generator = (
                 pre: appendLoadHandler(
                   i.config.pre,
                   options.model,
-                  services.plump
+                  services.plump,
                 ),
               },
             };

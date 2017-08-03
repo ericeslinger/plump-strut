@@ -1,10 +1,10 @@
-import { Model } from 'plump';
+import { Model, ModelData, ModelReference } from 'plump';
 import * as Hapi from 'hapi';
 import {
   Transformer,
-  StrutRouteConfiguration,
   RouteGenerator,
   BasicRouteOptions,
+  StrutRouteConfiguration,
   RouteOptions,
   StrutServices,
 } from './dataTypes';
@@ -17,7 +17,7 @@ function compose(...funs: Transformer[]) {
 export function plugin(
   gen: RouteGenerator,
   routeOptions: BasicRouteOptions,
-  services: StrutServices
+  services: StrutServices,
 ) {
   function p(server: Hapi.Server, _, next) {
     const routes: Hapi.RouteConfiguration[] = [];
@@ -31,12 +31,12 @@ export function plugin(
           gen.base(o, services),
           gen.joi(o, services),
           gen.authorize(o, services),
-          gen.handle(o, services)
-        )()
+          gen.handle(o, services),
+        )(),
       );
     });
     Object.keys(
-      routeOptions.model.schema.relationships
+      routeOptions.model.schema.relationships,
     ).forEach(relationship => {
       ['create', 'read', 'update', 'delete'].forEach(action => {
         const o = Object.assign({}, routeOptions, {
@@ -49,15 +49,11 @@ export function plugin(
             gen.base(o, services),
             gen.joi(o, services),
             gen.authorize(o, services),
-            gen.handle(o, services)
-          )()
+            gen.handle(o, services),
+          )(),
         );
       });
     });
-    // routes.forEach(route => {
-    //   console.log(`routing ${route.method} ${route.path}`);
-    //   server.route(route);
-    // });
     server.route(routes);
     next();
   }
@@ -66,7 +62,7 @@ export function plugin(
     {
       version: '1.0.0',
       name: routeOptions.model.type,
-    }
+    },
   );
   return p;
 }
