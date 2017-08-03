@@ -1,6 +1,6 @@
 {
   "name": "plump-strut",
-  "version": "0.17.0",
+  "version": "0.17.1",
   "description": "Adapter for creating CRUD route handlers for plump object in hapi.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
