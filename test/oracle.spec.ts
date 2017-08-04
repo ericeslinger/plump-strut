@@ -13,6 +13,7 @@ import {
 
 import { TestType } from './testType';
 import { Oracle } from '../src/oracle';
+import { ModelData } from 'plump';
 
 const expect = chai.expect;
 
@@ -51,10 +52,63 @@ const authTest: AuthorizerDefinition = {
 };
 
 describe('Authorization Oracle', () => {
+  describe('Filters', () => {
+    it('filters out unwanted things', () => {
+      const oracle = new Oracle(null);
+      const testItem: ModelData = {
+        id: 1,
+        type: TestType.type,
+        attributes: {
+          id: 1,
+          name: 'foo',
+          otherName: 'bar',
+          extended: {},
+        },
+      };
+      oracle.addFilter(
+        {
+          type: 'black',
+          attributes: ['otherName'],
+        },
+        TestType.type,
+      );
+      expect(oracle.filter(testItem).attributes).to.have.property(
+        'name',
+        'foo',
+      );
+      expect(oracle.filter(testItem).attributes).to.not.have.property(
+        'otherName',
+      );
+    });
+    it('filters in wanted things', () => {
+      const oracle = new Oracle(null);
+      const testItem: ModelData = {
+        id: 1,
+        type: TestType.type,
+        attributes: {
+          id: 1,
+          name: 'foo',
+          otherName: 'bar',
+          extended: {},
+        },
+      };
+      oracle.addFilter(
+        {
+          type: 'white',
+          attributes: ['otherName'],
+        },
+        TestType.type,
+      );
+      expect(oracle.filter(testItem).attributes).to.have.property(
+        'otherName',
+        'bar',
+      );
+      expect(oracle.filter(testItem).attributes).to.not.have.property('name');
+    });
+  });
   describe('Basic tests', () => {
     it('does basic passing attributes tests', () => {
       const oracle = new Oracle(null);
-      // TODO: KEYSERVER
       oracle.addAuthorizer(authTest, TestType.type);
       const person = { id: 1, type: 'profiles' };
 

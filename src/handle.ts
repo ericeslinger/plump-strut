@@ -69,7 +69,14 @@ export const handle: SegmentGenerator = (
           case 'read':
             return {
               handler: (request: RoutedItem, reply: Hapi.Base_Reply) => {
-                return reply(request.pre.item.data);
+                if (
+                  services.oracle &&
+                  services.oracle.filters[options.model.type]
+                ) {
+                  return reply(services.oracle.filter(request.pre.item.data));
+                } else {
+                  return reply(request.pre.item.data);
+                }
               },
               config: {
                 pre: appendLoadHandler(

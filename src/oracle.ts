@@ -5,6 +5,7 @@ import {
   FinalAuthorizeResponse,
   KeyService,
   IOracle,
+  FilterDefinition,
   RouteOptions,
 } from './dataTypes';
 
@@ -12,13 +13,48 @@ import { ModelData } from 'plump';
 
 import { Request } from 'hapi';
 
+function filter(input: ModelData, f: FilterDefinition): ModelData {
+  const rV = {
+    id: input.id,
+    type: input.type,
+    relationships: {},
+    attributes: {},
+  };
+  ['attributes', 'relationships'].forEach(thing => {
+    if (input[thing]) {
+      Object.keys(input[thing]).forEach(a => {
+        if (
+          (f.type === 'white' && f[thing] && f[thing].indexOf(a) >= 0) ||
+          (f.type === 'black' && (!f[thing] || !(f[thing].indexOf(a) >= 0)))
+        ) {
+          rV[thing][a] = input[thing][a];
+        }
+      });
+    }
+  });
+  return rV as ModelData;
+}
+
 export class Oracle implements IOracle {
   public authorizers: { [name: string]: AuthorizerDefinition } = {};
+  public filters: { [name: string]: FilterDefinition } = {};
 
   constructor(public keyService?: KeyService) {}
 
   addAuthorizer(auth: AuthorizerDefinition, forType: string) {
     this.authorizers[forType] = auth;
+  }
+
+  filter(md: ModelData): ModelData {
+    if (this.filters[md.type]) {
+      return filter(md, this.filters[md.type]);
+    } else {
+      return md;
+    }
+  }
+
+  addFilter(f: FilterDefinition, forType: string) {
+    this.filters[forType] = f;
   }
 
   dispatch(request: AuthorizeRequest): Promise<FinalAuthorizeResponse> {

@@ -136,11 +136,21 @@ export interface TokenService {
     tokenToUser: (token: string) => Promise<ModelData>;
     userToToken: (user: ModelData) => Promise<string>;
 }
+export interface FilterDefinition {
+    type: 'white' | 'black';
+    attributes?: string[];
+    relationships?: string[];
+}
 export interface IOracle {
     authorizers: {
         [name: string]: AuthorizerDefinition;
     };
+    filters: {
+        [name: string]: FilterDefinition;
+    };
     addAuthorizer(auth: AuthorizerDefinition, forType: string): void;
+    addFilter(auth: FilterDefinition, forType: string): void;
+    filter(m: ModelData): ModelData;
     dispatch(request: AuthorizeRequest): Promise<FinalAuthorizeResponse>;
     authorize(request: AuthorizeRequest): Promise<boolean>;
 }

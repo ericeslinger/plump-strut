@@ -125,6 +125,7 @@ export const authorize: SegmentGenerator = (
         i.config.pre = [];
       }
       const authMap = generateAuthRequest(options, services);
+      i.config.auth = 'token';
       i.config.pre = i.config.pre.concat({
         assign: 'authorize',
         method: (req: Hapi.Request, reply: Hapi.Base_Reply) => {
