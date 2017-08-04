@@ -44,7 +44,6 @@ export interface BasicRouteOptions {
   cors: Hapi.CorsConfigurationObject | boolean;
   authentication: string;
   model: typeof Model;
-  actorMapFn?: (m: ModelData) => ModelReference;
 }
 export interface BasicRouteSelector {
   kind: string;
@@ -186,11 +185,19 @@ export interface TokenService {
   userToToken: (user: ModelData) => Promise<string>;
 }
 
+export interface IOracle {
+  authorizers: { [name: string]: AuthorizerDefinition };
+  addAuthorizer(auth: AuthorizerDefinition, forType: string): void;
+  dispatch(request: AuthorizeRequest): Promise<FinalAuthorizeResponse>;
+  authorize(request: AuthorizeRequest): Promise<boolean>;
+}
+
 export interface StrutServices {
   hapi?: Hapi.Server;
   io?: SocketIO.Server;
   plump?: Plump;
   tokenStore?: TokenService;
+  oracle?: IOracle;
   [key: string]: any;
 }
 
@@ -327,8 +334,13 @@ export type AuthorizeResponse =
   | FinalAuthorizeResponse
   | DelegateAuthorizeResponse;
 
+export interface ActorMapFn {
+  (m: ModelData): ModelReference;
+}
+
 export interface AuthorizerDefinition {
   authorize(req: AuthorizeRequest): Promise<AuthorizeResponse>;
+  mapActor?: ActorMapFn;
 }
 
 export interface KeyService {

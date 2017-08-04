@@ -1,5 +1,5 @@
-import { AuthorizerDefinition, AuthorizeRequest, FinalAuthorizeResponse, KeyService } from './dataTypes';
-export declare class Oracle {
+import { AuthorizerDefinition, AuthorizeRequest, FinalAuthorizeResponse, KeyService, IOracle } from './dataTypes';
+export declare class Oracle implements IOracle {
     keyService: KeyService;
     authorizers: {
         [name: string]: AuthorizerDefinition;

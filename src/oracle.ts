@@ -4,6 +4,7 @@ import {
   AuthorizeResponse,
   FinalAuthorizeResponse,
   KeyService,
+  IOracle,
   RouteOptions,
 } from './dataTypes';
 
@@ -11,7 +12,7 @@ import { ModelData } from 'plump';
 
 import { Request } from 'hapi';
 
-export class Oracle {
+export class Oracle implements IOracle {
   public authorizers: { [name: string]: AuthorizerDefinition } = {};
 
   constructor(public keyService?: KeyService) {}

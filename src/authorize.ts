@@ -10,6 +10,7 @@ import {
   RouteOptions,
   StrutRouteConfiguration,
   StrutServices,
+  ActorMapFn,
 } from './dataTypes';
 import { Oracle } from './oracle';
 
@@ -17,10 +18,11 @@ function generateAuthRequest(
   options: RouteOptions,
   services: StrutServices,
 ): (r: Hapi.Request) => AuthorizeRequest {
+  const getActor: ActorMapFn = services.oracle.authorizers[options.model.type]
+    .mapActor
+    ? services.oracle.authorizers[options.model.type].mapActor
+    : v => v;
   return (req: Hapi.Request) => {
-    const getActor = options.actorMapFn
-      ? options.actorMapFn
-      : (v: ModelReference) => v;
     if (options.kind === 'attributes') {
       switch (options.action) {
         case 'create':
