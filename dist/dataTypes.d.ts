@@ -29,7 +29,6 @@ export interface BasicRouteOptions {
     cors: Hapi.CorsConfigurationObject | boolean;
     authentication: string;
     model: typeof Model;
-    actorMapFn?: (m: ModelData) => ModelReference;
 }
 export interface BasicRouteSelector {
     kind: string;
@@ -137,11 +136,30 @@ export interface TokenService {
     tokenToUser: (token: string) => Promise<ModelData>;
     userToToken: (user: ModelData) => Promise<string>;
 }
+export interface FilterDefinition {
+    type: 'white' | 'black';
+    attributes?: string[];
+    relationships?: string[];
+}
+export interface IOracle {
+    authorizers: {
+        [name: string]: AuthorizerDefinition;
+    };
+    filters: {
+        [name: string]: FilterDefinition;
+    };
+    addAuthorizer(auth: AuthorizerDefinition, forType: string): void;
+    addFilter(auth: FilterDefinition, forType: string): void;
+    filter(m: ModelData): ModelData;
+    dispatch(request: AuthorizeRequest): Promise<FinalAuthorizeResponse>;
+    authorize(request: AuthorizeRequest): Promise<boolean>;
+}
 export interface StrutServices {
     hapi?: Hapi.Server;
     io?: SocketIO.Server;
     plump?: Plump;
     tokenStore?: TokenService;
+    oracle?: IOracle;
     [key: string]: any;
 }
 export interface AbstractAuthorizeRequest {
@@ -224,8 +242,12 @@ export interface DelegateAuthorizeResponse extends AbstractAuthorizeResponse {
     delegate: AuthorizeRequest;
 }
 export declare type AuthorizeResponse = FinalAuthorizeResponse | DelegateAuthorizeResponse;
+export interface ActorMapFn {
+    (m: ModelData): ModelReference;
+}
 export interface AuthorizerDefinition {
     authorize(req: AuthorizeRequest): Promise<AuthorizeResponse>;
+    mapActor?: ActorMapFn;
 }
 export interface KeyService {
     test(key: string): Promise<boolean>;
