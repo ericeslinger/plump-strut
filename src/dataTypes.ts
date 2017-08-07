@@ -59,9 +59,9 @@ export interface StrutConfig {
   authRoot: string;
   routeOptions: Partial<RouteOptions>;
   routeGenerators: {
-    [type: string]: Partial<RouteGenerator>;
+    [type: string]: SegmentGenerator[];
   };
-  defaultRouteGenerator?: RouteGenerator;
+  defaultRouteGenerator?: SegmentGenerator[];
 }
 
 export interface AttributeRouteSelector extends BasicRouteSelector {
