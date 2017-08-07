@@ -3,19 +3,26 @@ import * as Hapi from 'hapi';
 import {
   Transformer,
   RouteGenerator,
+  SegmentGenerator,
   BasicRouteOptions,
   StrutRouteConfiguration,
   RouteOptions,
   StrutServices,
 } from './dataTypes';
 
-function compose(...funs: Transformer[]) {
+function compose(
+  o: RouteOptions,
+  services: StrutServices,
+  funs: SegmentGenerator[],
+) {
   return (initial: Partial<StrutRouteConfiguration> = {}) =>
-    funs.reduce((acc, v) => v(acc), initial) as StrutRouteConfiguration;
+    funs
+      .map(f => f(o, services))
+      .reduce((acc, v) => v(acc), initial) as StrutRouteConfiguration;
 }
 
 export function plugin(
-  gen: RouteGenerator,
+  gen: SegmentGenerator[],
   routeOptions: BasicRouteOptions,
   services: StrutServices,
 ) {
@@ -26,14 +33,7 @@ export function plugin(
         kind: 'attributes',
         action: action,
       }) as RouteOptions;
-      routes.push(
-        compose(
-          gen.base(o, services),
-          gen.joi(o, services),
-          gen.authorize(o, services),
-          gen.handle(o, services),
-        )(),
-      );
+      routes.push(compose(o, services, gen)());
     });
     Object.keys(
       routeOptions.model.schema.relationships,
@@ -44,14 +44,7 @@ export function plugin(
           action: action,
           relationship: relationship,
         }) as RouteOptions;
-        routes.push(
-          compose(
-            gen.base(o, services),
-            gen.joi(o, services),
-            gen.authorize(o, services),
-            gen.handle(o, services),
-          )(),
-        );
+        routes.push(compose(o, services, gen)());
       });
     });
     server.route(routes);

@@ -30,12 +30,7 @@ const defaultSettings: StrutConfig = {
   hostName: 'localhost',
   apiProtocol: 'https',
   routeOptions: {},
-  defaultRouteGenerator: {
-    base,
-    joi,
-    authorize,
-    handle,
-  },
+  defaultRouteGenerator: [base, joi, authorize, handle],
   routeGenerators: {},
 };
 
@@ -93,11 +88,8 @@ export class Strut implements StrutServer {
               // debugger;
               return this.services.hapi.register(
                 plugin(
-                  Object.assign(
-                    {},
+                  this.config.routeGenerators[t.type] ||
                     this.config.defaultRouteGenerator,
-                    this.config.routeGenerators[t.type],
-                  ),
                   {
                     cors: true,
                     authentication: 'token',
