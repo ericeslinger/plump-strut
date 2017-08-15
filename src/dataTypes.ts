@@ -25,6 +25,7 @@ export interface StrutServer {
   initialize: () => Promise<void>;
   preInit: () => Promise<void>;
   preRoute: () => Promise<void>;
+  extensions: any;
 }
 
 export interface RequestHandler {
@@ -348,8 +349,8 @@ export interface ActorMapFn {
 }
 
 export interface AuthorizerDefinition {
-  authorize(req: AuthorizeRequest): Promise<AuthorizeResponse>;
   mapActor?: ActorMapFn;
+  authorize(req: AuthorizeRequest): Promise<AuthorizeResponse>;
 }
 
 export interface KeyService {
