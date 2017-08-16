@@ -28,10 +28,27 @@ export function authenticationChannelDispatch(
     });
   } else if (msg.request === 'testkey') {
     return server.services.tokenStore.tokenToUser(msg.key).then(v => {
-      return {
-        response: msg.request,
-        auth: !!v,
-      };
+      if (!!v && server.extensions['loginExtras']) {
+        return server.extensions['loginExtras'](v).then(extras => {
+          return {
+            response: msg.request,
+            auth: true,
+            you: v,
+            included: extras,
+          };
+        });
+      } else if (!!v && !server.extensions['loginExtras']) {
+        return {
+          response: msg.request,
+          you: v,
+          auth: true,
+        };
+      } else {
+        return {
+          response: msg.request,
+          auth: false,
+        };
+      }
     });
   } else {
     return Promise.resolve<AuthenticationResponse>({

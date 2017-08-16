@@ -36,6 +36,7 @@ const defaultSettings: StrutConfig = {
 
 export class Strut implements StrutServer {
   public config: StrutConfig;
+  public extensions: any = {};
 
   constructor(
     plump: Plump,
