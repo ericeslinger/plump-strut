@@ -6,6 +6,7 @@ import {
   AuthenticationStrategy,
   TokenService,
   StrutServices,
+  TokenResponse,
 } from './dataTypes';
 import { ModelData } from 'plump';
 import { StrutServer } from './dataTypes';
@@ -26,12 +27,14 @@ function routeGen(options: AuthenticationStrategy, strut: StrutServices) {
   );
   const routeHandler: Hapi.RouteHandler = (request, reply) => {
     return options.handler(request, strut).then(r => {
-      strut.io
-        .to(request.state[`${options.name}-nonce`].nonce)
-        .emit(request.state[`${options.name}-nonce`].nonce, {
+      strut.io.to(request.state[`${options.name}-nonce`].nonce).emit(
+        request.state[`${options.name}-nonce`].nonce,
+        {
+          response: 'token',
           status: 'success',
           token: r.token,
-        });
+        } as TokenResponse,
+      );
       reply(r.response).type('text/html').unstate(`${options.name}-nonce`);
     });
   };
@@ -92,7 +95,7 @@ export function configureAuth(strut: StrutServer) {
         },
       },
     });
-    strut.config.authTypes.forEach(t => routeGen(t, strut)(s));
+    strut.config.authTypes.forEach(t => routeGen(t, strut.services)(s));
     next();
   };
   plugin.attributes = {

@@ -98,11 +98,29 @@ export interface StartResponse extends Response {
     response: 'startauth';
     types: AuthenticationType[];
 }
-export interface TestResponse extends Response {
+export interface GoodTestResponse extends Response {
     response: 'testkey';
-    auth: boolean;
+    auth: true;
+    token: string;
+    you?: any;
+    included?: ModelData[];
 }
-export declare type AuthenticationResponse = InvalidRequestResponse | StartResponse | TestResponse;
+export interface BadTestResponse extends Response {
+    response: 'testkey';
+    auth: false;
+}
+export declare type TestResponse = GoodTestResponse | BadTestResponse;
+export interface GoodTokenResponse extends Response {
+    response: 'token';
+    status: 'success';
+    token: string;
+}
+export interface BadTokenResponse extends Response {
+    response: 'token';
+    status: 'failure';
+}
+export declare type TokenResponse = GoodTokenResponse | BadTokenResponse;
+export declare type AuthenticationResponse = InvalidRequestResponse | StartResponse | TestResponse | TokenResponse;
 export interface AuthenticationType {
     name: string;
     url: string;

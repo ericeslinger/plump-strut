@@ -4,8 +4,36 @@ import {
   StrutServer,
   SingletonRequest,
   AuthenticationRequest,
+  TestKeyAuthenticationRequest,
+  TestResponse,
   AuthenticationResponse,
 } from './dataTypes';
+
+function test(
+  msg: TestKeyAuthenticationRequest,
+  server: StrutServer,
+): Promise<TestResponse> {
+  const response: any = {
+    response: 'testkey',
+  };
+  return server.services.tokenStore
+    .tokenToUser(msg.key)
+    .then(v => {
+      if (!!v) {
+        response.you = v;
+        response.auth = true;
+        response.token = msg.key;
+        if (server.extensions['loginExtras']) {
+          return server.extensions
+            ['loginExtras'](v)
+            .then(r => (response.included = r));
+        }
+      } else {
+        response.auth = false;
+      }
+    })
+    .then(() => response);
+}
 
 export function authenticationChannelDispatch(
   msg: AuthenticationRequest,
@@ -27,29 +55,7 @@ export function authenticationChannelDispatch(
       }),
     });
   } else if (msg.request === 'testkey') {
-    return server.services.tokenStore.tokenToUser(msg.key).then(v => {
-      if (!!v && server.extensions['loginExtras']) {
-        return server.extensions['loginExtras'](v).then(extras => {
-          return {
-            response: msg.request,
-            auth: true,
-            you: v,
-            included: extras,
-          };
-        });
-      } else if (!!v && !server.extensions['loginExtras']) {
-        return {
-          response: msg.request,
-          you: v,
-          auth: true,
-        };
-      } else {
-        return {
-          response: msg.request,
-          auth: false,
-        };
-      }
-    });
+    return test(msg, server);
   } else {
     return Promise.resolve<AuthenticationResponse>({
       response: 'invalidRequest',
