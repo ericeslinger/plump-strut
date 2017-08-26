@@ -97,7 +97,7 @@ function generateAuthRequest(
             relationship: options.relationship,
             actor: getActor(req.auth.credentials.user),
             target: { type: options.model.type, id: req.params.itemId },
-            child: { type: childModel.type, id: req.payload.id },
+            child: { type: childModel.type, id: req.params.childId },
             meta: req.payload.meta,
           };
         case 'delete':
@@ -107,7 +107,7 @@ function generateAuthRequest(
             relationship: options.relationship,
             actor: getActor(req.auth.credentials.user),
             target: { type: options.model.type, id: req.params.itemId },
-            child: { type: childModel.type, id: req.payload.id },
+            child: { type: childModel.type, id: req.params.childId },
           };
       }
     }
