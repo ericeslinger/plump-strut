@@ -15,7 +15,7 @@ function appendLoadHandler(
   pre: any[] = [],
   model: typeof Model,
   plump: Plump,
-  toLoad: string[] = ['attributes'],
+  toLoad: string[] = ['attributes', 'relationships'],
 ) {
   return pre.concat({
     method: (request: Hapi.Request, reply: Hapi.Base_Reply) => {
@@ -25,7 +25,7 @@ function appendLoadHandler(
           id: request.params.itemId,
         });
         return item
-          .get()
+          .get(toLoad)
           .then(thing => {
             if (thing) {
               reply({
