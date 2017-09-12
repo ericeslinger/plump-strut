@@ -17,9 +17,13 @@ export interface ResponseEnvelope<T extends Response = Response> {
   broadcast?: boolean | string;
 }
 
+export interface AuthenticatedSocket extends SocketIO.Socket {
+  user?: ModelData;
+}
+
 export interface ChannelRequest {
   request: string;
-  client: SocketIO.Socket;
+  client: AuthenticatedSocket;
 }
 
 export interface SingletonRequest extends ChannelRequest {

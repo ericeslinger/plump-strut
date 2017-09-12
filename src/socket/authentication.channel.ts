@@ -10,6 +10,7 @@ import {
   AuthenticationResponse,
   SocketDispatch,
   ResponseEnvelope,
+  AuthenticatedSocket,
 } from './dataTypes';
 
 import { ChannelRequest } from './dataTypes';
@@ -22,6 +23,7 @@ function test(
     .tokenToUser(msg.key)
     .then(v => {
       if (!!v) {
+        msg.client.user = v;
         return {
           response: 'testkey',
           you: v,
@@ -57,7 +59,7 @@ function start(
 ): ResponseEnvelope<StartResponse> {
   msg.client.join(msg.nonce);
   return {
-    key: msg.request,
+    key: msg.nonce,
     broadcast: false,
     msg: {
       response: 'startauth',
