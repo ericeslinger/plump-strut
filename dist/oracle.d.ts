@@ -1,4 +1,5 @@
-import { AuthorizerDefinition, AuthorizeRequest, FinalAuthorizeResponse, KeyService, IOracle, FilterDefinition } from './dataTypes';
+import { KeyService } from './dataTypes';
+import { AuthorizerDefinition, AuthorizeRequest, FinalAuthorizeResponse, IOracle, FilterDefinition } from './authorize';
 import { ModelData } from 'plump';
 export declare class Oracle implements IOracle {
     keyService: KeyService;
