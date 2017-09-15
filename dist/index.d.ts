@@ -1,4 +1,3 @@
-export * from './authentication.channel';
 export * from './authentication';
 export * from './authorize';
 export * from './base';
@@ -8,4 +7,6 @@ export * from './joi';
 export * from './oracle';
 export * from './plugin';
 export * from './server';
-export * from './socket.channel';
+export * from './socket/authentication.channel';
+export * from './socket/dispatch';
+export * from './socket/dataTypes';

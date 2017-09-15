@@ -15,10 +15,11 @@ import {
 } from './dataTypes';
 
 import { configureAuth } from './authentication';
-import { dispatch } from './socket.channel';
+import { dispatch } from './socket/dispatch';
 import { base } from './base';
 import { joi } from './joi';
 import { authorize } from './authorize';
+import { AuthenticationChannel } from './socket/authentication.channel';
 import { handle } from './handle';
 import { plugin } from './plugin';
 
@@ -31,6 +32,7 @@ const defaultSettings: StrutConfig = {
   apiProtocol: 'https',
   routeOptions: {},
   defaultRouteGenerator: [base, joi, authorize, handle],
+  socketHandlers: [AuthenticationChannel],
   routeGenerators: {},
 };
 
@@ -119,7 +121,7 @@ export class Strut implements StrutServer {
       })
       .then(() => {
         this.services.io = SocketIO(this.services.hapi.listener);
-        dispatch(this);
+        this.config.socketHandlers.forEach(h => dispatch(h, this));
       });
   }
 

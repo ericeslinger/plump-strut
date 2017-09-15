@@ -1,5 +1,7 @@
 import * as Hapi from 'hapi';
-import { Model, ModelReference, IndefiniteModelData, ModelData, Plump } from 'plump';
+import { Model, ModelData, Plump } from 'plump';
+import { SocketDispatch } from './socket/dataTypes';
+import { IOracle } from './authorize';
 export interface RoutedItem extends Hapi.Request {
     pre: {
         item: {
@@ -16,9 +18,6 @@ export interface StrutServer {
     preInit: () => Promise<void>;
     preRoute: () => Promise<void>;
     extensions: any;
-}
-export interface RequestHandler {
-    (m: ChannelRequest, s: StrutServer): Promise<Response>;
 }
 export interface StrutInnerConfig extends Hapi.RouteAdditionalConfigurationOptions {
     pre: Hapi.RoutePrerequisiteObjects[];
@@ -44,6 +43,7 @@ export interface StrutConfig {
     hostName: string;
     authRoot: string;
     routeOptions: Partial<RouteOptions>;
+    socketHandlers: SocketDispatch[];
     routeGenerators: {
         [type: string]: SegmentGenerator[];
     };
@@ -72,55 +72,6 @@ export interface RouteGenerator {
     authorize: SegmentGenerator;
     handle: SegmentGenerator;
 }
-export interface SingletonRequest {
-    responseKey: string;
-}
-export interface ChannelRequest {
-    request: string;
-    client: SocketIO.Socket;
-}
-export interface TestKeyAuthenticationRequest extends ChannelRequest, SingletonRequest {
-    request: 'testkey';
-    key: string;
-}
-export interface StartAuthenticationRequest extends ChannelRequest, SingletonRequest {
-    request: 'startauth';
-    nonce: string;
-}
-export declare type AuthenticationRequest = TestKeyAuthenticationRequest | StartAuthenticationRequest;
-export interface Response {
-    response: string;
-}
-export interface InvalidRequestResponse extends Response {
-    response: 'invalidRequest';
-}
-export interface StartResponse extends Response {
-    response: 'startauth';
-    types: AuthenticationType[];
-}
-export interface GoodTestResponse extends Response {
-    response: 'testkey';
-    auth: true;
-    token: string;
-    you?: any;
-    included?: ModelData[];
-}
-export interface BadTestResponse extends Response {
-    response: 'testkey';
-    auth: false;
-}
-export declare type TestResponse = GoodTestResponse | BadTestResponse;
-export interface GoodTokenResponse extends Response {
-    response: 'token';
-    status: 'success';
-    token: string;
-}
-export interface BadTokenResponse extends Response {
-    response: 'token';
-    status: 'failure';
-}
-export declare type TokenResponse = GoodTokenResponse | BadTokenResponse;
-export declare type AuthenticationResponse = InvalidRequestResponse | StartResponse | TestResponse | TokenResponse;
 export interface AuthenticationType {
     name: string;
     url: string;
@@ -155,24 +106,6 @@ export interface TokenService {
     tokenToUser: (token: string) => Promise<ModelData>;
     userToToken: (user: ModelData) => Promise<string>;
 }
-export interface FilterDefinition {
-    type: 'white' | 'black';
-    attributes?: string[];
-    relationships?: string[];
-}
-export interface IOracle {
-    authorizers: {
-        [name: string]: AuthorizerDefinition;
-    };
-    filters: {
-        [name: string]: FilterDefinition;
-    };
-    addAuthorizer(auth: AuthorizerDefinition, forType: string): void;
-    addFilter(auth: FilterDefinition, forType: string): void;
-    filter(m: ModelData): ModelData;
-    dispatch(request: AuthorizeRequest): Promise<FinalAuthorizeResponse>;
-    authorize(request: AuthorizeRequest): Promise<boolean>;
-}
 export interface StrutServices {
     hapi?: Hapi.Server;
     io?: SocketIO.Server;
@@ -180,93 +113,6 @@ export interface StrutServices {
     tokenStore?: TokenService;
     oracle?: IOracle;
     [key: string]: any;
-}
-export interface AbstractAuthorizeRequest {
-    kind: 'attributes' | 'relationship' | 'compound';
-}
-export interface AbstractAttributesAuthorizeRequest extends AbstractAuthorizeRequest {
-    action: 'create' | 'read' | 'update' | 'delete' | 'query';
-    actor: ModelReference;
-    kind: 'attributes';
-}
-export interface AttributesReadAuthorizeRequest extends AbstractAttributesAuthorizeRequest {
-    action: 'read';
-    target: ModelReference;
-}
-export interface AttributesDeleteAuthorizeRequest extends AbstractAttributesAuthorizeRequest {
-    action: 'delete';
-    target: ModelReference;
-}
-export interface AttributesCreateAuthorizeRequest extends AbstractAttributesAuthorizeRequest {
-    action: 'create';
-    data?: IndefiniteModelData;
-    target: {
-        type: string;
-    };
-}
-export interface AttributesQueryAuthorizeRequest extends AbstractAttributesAuthorizeRequest {
-    action: 'query';
-    target: {
-        type: string;
-    };
-}
-export interface AttributesUpdateAuthorizeRequest extends AbstractAttributesAuthorizeRequest {
-    action: 'update';
-    target: ModelReference;
-    data?: ModelData;
-}
-export declare type AttributesAuthorizeRequest = AttributesCreateAuthorizeRequest | AttributesReadAuthorizeRequest | AttributesUpdateAuthorizeRequest | AttributesDeleteAuthorizeRequest | AttributesQueryAuthorizeRequest;
-export interface AbstractRelationshipAuthorizeRequest extends AbstractAuthorizeRequest {
-    kind: 'relationship';
-    actor: ModelReference;
-    action: 'create' | 'read' | 'update' | 'delete';
-    relationship: string;
-    target: ModelReference;
-}
-export interface RelationshipCreateAuthorizeRequest extends AbstractRelationshipAuthorizeRequest {
-    action: 'create';
-    child: ModelReference;
-    meta?: any;
-}
-export interface RelationshipReadAuthorizeRequest extends AbstractRelationshipAuthorizeRequest {
-    action: 'read';
-}
-export interface RelationshipUpdateAuthorizeRequest extends AbstractRelationshipAuthorizeRequest {
-    action: 'update';
-    child: ModelReference;
-    meta?: any;
-}
-export interface RelationshipDeleteAuthorizeRequest extends AbstractRelationshipAuthorizeRequest {
-    action: 'delete';
-    child: ModelReference;
-}
-export declare type RelationshipAuthorizeRequest = RelationshipCreateAuthorizeRequest | RelationshipReadAuthorizeRequest | RelationshipUpdateAuthorizeRequest | RelationshipDeleteAuthorizeRequest;
-export declare type SimpleAuthorizeRequest = RelationshipAuthorizeRequest | AttributesAuthorizeRequest;
-export interface CompoundAuthorizeRequest extends AbstractAuthorizeRequest {
-    kind: 'compound';
-    combinator: 'and' | 'or';
-    list: (AttributesAuthorizeRequest | RelationshipAuthorizeRequest | CompoundAuthorizeRequest)[];
-}
-export declare type ConcreteAuthorizeRequest = RelationshipAuthorizeRequest | AttributesAuthorizeRequest;
-export declare type AuthorizeRequest = RelationshipAuthorizeRequest | AttributesAuthorizeRequest | CompoundAuthorizeRequest;
-export interface AbstractAuthorizeResponse {
-    kind: string;
-}
-export interface FinalAuthorizeResponse extends AbstractAuthorizeResponse {
-    kind: 'final';
-    result: boolean;
-}
-export interface DelegateAuthorizeResponse extends AbstractAuthorizeResponse {
-    kind: 'delegated';
-    delegate: AuthorizeRequest;
-}
-export declare type AuthorizeResponse = FinalAuthorizeResponse | DelegateAuthorizeResponse;
-export interface ActorMapFn {
-    (m: ModelData): ModelReference;
-}
-export interface AuthorizerDefinition {
-    mapActor?: ActorMapFn;
-    authorize(req: AuthorizeRequest): Promise<AuthorizeResponse>;
 }
 export interface KeyService {
     test(key: string): Promise<boolean>;

@@ -1,14 +1,13 @@
+import { KeyService, RouteOptions } from './dataTypes';
+
 import {
   AuthorizerDefinition,
   AuthorizeRequest,
   AuthorizeResponse,
   FinalAuthorizeResponse,
-  KeyService,
   IOracle,
   FilterDefinition,
-  RouteOptions,
-} from './dataTypes';
-
+} from './authorize';
 import { ModelData } from 'plump';
 
 import { Request } from 'hapi';
