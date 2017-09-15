@@ -1,8 +1,7 @@
 {
   "name": "plump-strut",
-  "version": "0.18.3",
-  "description":
-    "Adapter for creating CRUD route handlers for plump object in hapi.js",
+  "version": "0.19.0",
+  "description": "Adapter for creating CRUD route handlers for plump object in hapi.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -12,7 +11,11 @@
     "type": "git",
     "url": "git+https://github.com/kstf/plump-strut.git"
   },
-  "keywords": ["plump", "javascript", "hapi"],
+  "keywords": [
+    "plump",
+    "javascript",
+    "hapi"
+  ],
   "author": "Eric Eslinger",
   "license": "MIT",
   "bugs": {
@@ -20,35 +23,35 @@
   },
   "homepage": "https://github.com/kstf/plump-strut#readme",
   "devDependencies": {
-    "@types/boom": "4.3.6",
-    "@types/chai": "^4.0.2",
-    "@types/core-js": "^0.9.42",
-    "@types/joi": "^10.4.0",
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^8.0.19",
-    "chai": "^4.1.0",
+    "@types/boom": "4.3.7",
+    "@types/chai": "^4.0.4",
+    "@types/core-js": "^0.9.43",
+    "@types/hapi": "^16.1.9",
+    "@types/joi": "^10.4.2",
+    "@types/mocha": "^2.2.43",
+    "@types/node": "^8.0.28",
+    "@types/socket.io": "^1.4.30",
+    "chai": "^4.1.2",
     "del": "^3.0.0",
-    "gulp": "github:gulpjs/gulp.git#4.0",
+    "gulp": "github:gulpjs/gulp#4.0",
     "gulp-mocha": "^4.3.1",
-    "gulp-sourcemaps": "^2.6.0",
-    "gulp-typescript": "^3.2.1",
-    "mocha": "^3.5.0",
-    "plump": "^0.17.0",
+    "gulp-sourcemaps": "^2.6.1",
+    "gulp-typescript": "^3.2.2",
+    "mocha": "^3.5.3",
+    "plump": "^0.19.1",
     "ts-node": "^3.3.0",
-    "tslint": "^5.5.0",
+    "tslint": "^5.7.0",
     "tslint-eslint-rules": "^4.1.1",
-    "typescript": "2.4.2"
+    "typescript": "2.5.2"
   },
   "dependencies": {
-    "@types/hapi": "^16.1.8",
-    "@types/socket.io": "^1.4.29",
-    "bell": "^8.7.0",
-    "boom": "^5.2.0",
-    "hapi": "^16.5.0",
-    "hapi-auth-bearer-token": "^5.1.0",
-    "joi": "^10.6.0",
+    "joi": "^11.0.0",
+    "bell": "^8.0.0",
+    "boom": "^5.0.0",
+    "hapi": "^16.0.0",
+    "hapi-auth-bearer-token": "^5.0.0",
     "merge-options": "1.0.0",
-    "socket.io": "^2.0.3",
-    "ulid": "^0.2.0"
+    "socket.io": "^2.0.0",
+    "ulid": "^1.0.0"
   }
 }
