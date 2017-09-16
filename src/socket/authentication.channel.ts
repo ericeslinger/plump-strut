@@ -24,6 +24,8 @@ function test(
     .then(v => {
       if (!!v) {
         msg.client.user = v;
+        msg.client.join('authenticated');
+        console.log('authenticated user');
         return {
           response: 'testkey',
           you: v,
