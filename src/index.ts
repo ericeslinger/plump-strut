@@ -10,3 +10,4 @@ export * from './server';
 export * from './socket/authentication.channel';
 export * from './socket/dispatch';
 export * from './socket/dataTypes';
+export * from './postgresWatcher';

@@ -31,6 +31,7 @@ function relationshipValidate(m: typeof Model, relationship: string, p: Plump) {
     ];
   const dataSchema = {
     id: Joi[c.schema.attributes[c.schema.idAttribute].type](),
+    type: Joi.string().optional(),
   };
 
   if (m.schema.relationships[relationship].type.extras) {
