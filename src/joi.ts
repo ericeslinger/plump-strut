@@ -111,6 +111,9 @@ export const joi: SegmentGenerator = (
             return {
               config: {
                 validate: {
+                  params: {
+                    itemId: Joi[idType](),
+                  },
                   payload: relationshipValidate(
                     options.model,
                     options.relationship,
