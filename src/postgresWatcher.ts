@@ -1,14 +1,14 @@
-import { Plump } from 'plump';
+import { Plump, TerminalStore } from 'plump';
 import { Client } from 'pg';
 import * as SocketIO from 'socket.io';
 
-export class PostgresWatcher {
+export class PostgresWatcher<T extends TerminalStore> {
   relationshipMap: {
     [key: string]: { type: string; field: string; idField: string }[];
   } = {};
   constructor(
     public rawDB: Client,
-    public plump: Plump,
+    public plump: Plump<T>,
     public io: SocketIO.Server,
   ) {
     Object.keys(this.plump.terminal.types).forEach(typeName => {

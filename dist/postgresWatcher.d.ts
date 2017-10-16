@@ -1,8 +1,8 @@
-import { Plump } from 'plump';
+import { Plump, TerminalStore } from 'plump';
 import { Client } from 'pg';
-export declare class PostgresWatcher {
+export declare class PostgresWatcher<T extends TerminalStore> {
     rawDB: Client;
-    plump: Plump;
+    plump: Plump<T>;
     io: SocketIO.Server;
     relationshipMap: {
         [key: string]: {
@@ -11,6 +11,6 @@ export declare class PostgresWatcher {
             idField: string;
         }[];
     };
-    constructor(rawDB: Client, plump: Plump, io: SocketIO.Server);
+    constructor(rawDB: Client, plump: Plump<T>, io: SocketIO.Server);
     handlePGNotification(data: any): void;
 }
