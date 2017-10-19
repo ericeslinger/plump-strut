@@ -19,8 +19,8 @@ export class PostgresWatcher<T extends TerminalStore> {
           relName
         ].type;
         if (
-          !this.relationshipMap[relTable.storeData.sql.tableName] &&
-          !relTable.storeData.sql.joinQuery
+          relTable.storeData.sql.tableName &&
+          !this.relationshipMap[relTable.storeData.sql.tableName]
         ) {
           this.relationshipMap[relTable.storeData.sql.tableName] = Object.keys(
             relTable.sides,
