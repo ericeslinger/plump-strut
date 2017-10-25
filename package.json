@@ -1,8 +1,7 @@
 {
   "name": "plump-strut",
   "version": "0.20.1",
-  "description":
-    "Adapter for creating CRUD route handlers for plump object in hapi.js",
+  "description": "Adapter for creating CRUD route handlers for plump object in hapi.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -12,7 +11,11 @@
     "type": "git",
     "url": "git+https://github.com/kstf/plump-strut.git"
   },
-  "keywords": ["plump", "javascript", "hapi"],
+  "keywords": [
+    "plump",
+    "javascript",
+    "hapi"
+  ],
   "author": "Eric Eslinger",
   "license": "MIT",
   "bugs": {
@@ -49,7 +52,6 @@
     "hapi-auth-bearer-token": "^5.0.0",
     "joi": "^11.0.0",
     "merge-options": "1.0.0",
-    "socket.io": "^2.0.0",
-    "ulid": "^1.0.0"
+    "socket.io": "^2.0.0"
   }
 }
