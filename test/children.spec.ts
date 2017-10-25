@@ -51,7 +51,10 @@ describe('HasMany Plump Routes', () => {
   });
 
   it('C', () => {
-    const one = new TestType({ name: 'potato' }, testContext.plump);
+    const one = new TestType(
+      { attributes: { name: 'potato' } },
+      testContext.plump,
+    );
     return one
       .save()
       .then(() => {
@@ -74,7 +77,10 @@ describe('HasMany Plump Routes', () => {
   });
 
   it('R', () => {
-    const one = new TestType({ name: 'potato' }, testContext.plump);
+    const one = new TestType(
+      { attributes: { name: 'potato' } },
+      testContext.plump,
+    );
     return one
       .save()
       .then(() => one.add('children', { id: 100 }).save())
@@ -91,6 +97,7 @@ describe('HasMany Plump Routes', () => {
         });
       })
       .then(response => {
+        console.log(response.payload);
         expect(response).to.have.property('statusCode', 200);
         expect(
           JSON.parse(response.payload).relationships.children,
@@ -99,7 +106,10 @@ describe('HasMany Plump Routes', () => {
   });
 
   it('U', () => {
-    const one = new TestType({ name: 'potato' }, testContext.plump);
+    const one = new TestType(
+      { attributes: { name: 'potato' } },
+      testContext.plump,
+    );
     return one
       .save()
       .then(() =>
@@ -132,7 +142,10 @@ describe('HasMany Plump Routes', () => {
   });
 
   it('D', () => {
-    const one = new TestType({ name: 'potato' }, testContext.plump);
+    const one = new TestType(
+      { attributes: { name: 'potato' } },
+      testContext.plump,
+    );
     return one
       .save()
       .then(() => one.add('children', { id: 100 }).save())

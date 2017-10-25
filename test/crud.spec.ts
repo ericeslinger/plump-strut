@@ -64,7 +64,7 @@ describe('Base Plump Routes', () => {
 
   it('R', () => {
     const one = new TestType(
-      { name: 'potato', otherName: '', extended: {} },
+      { attributes: { name: 'potato', otherName: '', extended: {} } },
       context.plump,
     );
     return one
@@ -82,7 +82,7 @@ describe('Base Plump Routes', () => {
   });
 
   it('U', () => {
-    const one = new TestType({ name: 'potato' }, context.plump);
+    const one = new TestType({ attributes: { name: 'potato' } }, context.plump);
     return one
       .save()
       .then(() => {
@@ -100,7 +100,7 @@ describe('Base Plump Routes', () => {
 
   it('D', () => {
     const one = new TestType(
-      { name: 'potato', otherName: '', extended: {} },
+      { attributes: { name: 'potato', otherName: '', extended: {} } },
       context.plump,
     );
     let id;

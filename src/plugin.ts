@@ -13,7 +13,7 @@ import {
 function compose(
   o: RouteOptions,
   services: StrutServices,
-  funs: SegmentGenerator[],
+  funs: SegmentGenerator[]
 ) {
   return (initial: Partial<StrutRouteConfiguration> = {}) =>
     funs
@@ -24,7 +24,7 @@ function compose(
 export function plugin(
   gen: SegmentGenerator[],
   routeOptions: BasicRouteOptions,
-  services: StrutServices,
+  services: StrutServices
 ) {
   function p(server: Hapi.Server, _, next) {
     const routes: Hapi.RouteConfiguration[] = [];
@@ -36,7 +36,7 @@ export function plugin(
       routes.push(compose(o, services, gen)());
     });
     Object.keys(
-      routeOptions.model.schema.relationships,
+      routeOptions.model.schema.relationships
     ).forEach(relationship => {
       ['create', 'read', 'update', 'delete'].forEach(action => {
         const o = Object.assign({}, routeOptions, {
@@ -47,7 +47,7 @@ export function plugin(
         routes.push(compose(o, services, gen)());
       });
     });
-    server.route(routes);
+    server.route(routes.filter(v => !!v));
     next();
   }
   p['attributes'] = Object.assign(
@@ -55,7 +55,7 @@ export function plugin(
     {
       version: '1.0.0',
       name: routeOptions.model.type,
-    },
+    }
   );
   return p;
 }

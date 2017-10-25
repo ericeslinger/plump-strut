@@ -84,6 +84,7 @@ export const base: SegmentGenerator = (
       {
         config: {
           cors: options.cors ? options.cors : false,
+          pre: [],
         },
       },
       routeBlock(),

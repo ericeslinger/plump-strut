@@ -1,29 +1,31 @@
-import { Plump } from 'plump';
+import { Plump, TerminalStore } from 'plump';
 import { Client } from 'pg';
 import * as SocketIO from 'socket.io';
 
-export class PostgresWatcher {
+export class PostgresWatcher<T extends TerminalStore> {
   relationshipMap: {
     [key: string]: { type: string; field: string; idField: string }[];
   } = {};
   constructor(
     public rawDB: Client,
-    public plump: Plump,
-    public io: SocketIO.Server,
+    public plump: Plump<T>,
+    public io: SocketIO.Server
   ) {
     Object.keys(this.plump.terminal.types).forEach(typeName => {
       Object.keys(
-        this.plump.terminal.types[typeName].relationships,
+        this.plump.terminal.types[typeName].relationships
       ).forEach(relName => {
         const relTable = this.plump.terminal.types[typeName].relationships[
           relName
         ].type;
         if (
-          !this.relationshipMap[relTable.storeData.sql.tableName] &&
-          !relTable.storeData.sql.joinQuery
+          relTable.storeData &&
+          relTable.storeData.sql &&
+          relTable.storeData.sql.tableName &&
+          !this.relationshipMap[relTable.storeData.sql.tableName]
         ) {
           this.relationshipMap[relTable.storeData.sql.tableName] = Object.keys(
-            relTable.sides,
+            relTable.sides
           ).map(sideName => {
             return {
               type:

@@ -9,7 +9,7 @@ import {
   DelegateAuthorizeResponse,
   SimpleAuthorizeRequest,
   AuthorizeResponse,
-} from '../src/dataTypes';
+} from '../src/authorize';
 
 import { TestType } from './testType';
 import { Oracle } from '../src/oracle';
