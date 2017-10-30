@@ -31,9 +31,14 @@ const defaultSettings: StrutConfig = {
   hostName: 'localhost',
   apiProtocol: 'https',
   routeOptions: {},
-  defaultRouteGenerator: [base, joi, authorize, handle],
+  defaultController: {
+    generators: [base, joi, authorize, handle],
+    attributes: ['create', 'read', 'update', 'delete'],
+    relationships: ['create', 'read', 'update', 'delete'],
+    other: ['query'],
+  },
   socketHandlers: [AuthenticationChannel],
-  routeGenerators: {},
+  controllers: {},
 };
 
 export class Strut implements StrutServer {
@@ -43,7 +48,7 @@ export class Strut implements StrutServer {
   constructor(
     plump: Plump,
     conf: Partial<StrutConfig>,
-    public services: StrutServices = {},
+    public services: StrutServices = {}
   ) {
     this.services.hapi = new Hapi.Server();
     this.services.plump = plump;
@@ -57,7 +62,7 @@ export class Strut implements StrutServer {
           this.services.hapi.auth.strategy('token', 'bearer-access-token', {
             validateFunc: (token, callback) =>
               this.services.tokenStore.validate(token, callback),
-          }),
+          })
         );
       }
     });
@@ -86,23 +91,23 @@ export class Strut implements StrutServer {
       .then(() => this.preRoute())
       .then(() => {
         return Promise.all(
-          (this.config.models || this.services.plump.getTypes())
-            .map((t: typeof Model) => {
-              // debugger;
-              return this.services.hapi.register(
-                plugin(
-                  this.config.routeGenerators[t.type] ||
-                    this.config.defaultRouteGenerator,
-                  {
-                    cors: true,
-                    authentication: 'token',
-                    model: t,
-                  },
-                  this.services,
-                ),
-                { routes: { prefix: `${this.config.apiRoot}/${t.type}` } },
-              );
-            }),
+          (this.config.models || this.services.plump.getTypes()
+          ).map((t: typeof Model) => {
+            // debugger;
+            return this.services.hapi.register(
+              plugin(
+                this.config.controllers[t.type] ||
+                  this.config.defaultController,
+                {
+                  cors: true,
+                  authentication: 'token',
+                  model: t,
+                },
+                this.services
+              ),
+              { routes: { prefix: `${this.config.apiRoot}/${t.type}` } }
+            );
+          })
         );
       })
       .then(() =>
@@ -110,8 +115,8 @@ export class Strut implements StrutServer {
           configureAuth(this) as Hapi.PluginFunction<{}>,
           {
             routes: { prefix: this.config.authRoot },
-          },
-        ),
+          }
+        )
       )
       .then(() => {
         this.services.hapi.ext('onPreAuth', (request, reply) => {

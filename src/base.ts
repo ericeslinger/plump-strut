@@ -9,7 +9,7 @@ import * as mergeOptions from 'merge-options';
 
 export const base: SegmentGenerator = (
   options: RouteOptions,
-  services: StrutServices,
+  services: StrutServices
 ) => {
   return (i: Partial<Hapi.RouteConfiguration>) => {
     function routeBlock() {
@@ -41,11 +41,6 @@ export const base: SegmentGenerator = (
               method: 'DELETE',
               path: '/{itemId}',
             };
-          case 'query':
-            return {
-              method: 'GET',
-              path: '',
-            };
         }
       } else if (options.kind === 'relationship') {
         switch (options.action) {
@@ -76,6 +71,13 @@ export const base: SegmentGenerator = (
               path: `/{itemId}/${options.relationship}/{childId}`,
             };
         }
+      } else if (options.kind === 'other') {
+        if (options.action === 'query') {
+          return {
+            method: 'GET',
+            path: '',
+          };
+        }
       }
     }
     return mergeOptions(
@@ -87,7 +89,7 @@ export const base: SegmentGenerator = (
           pre: [],
         },
       },
-      routeBlock(),
+      routeBlock()
     );
   };
 };

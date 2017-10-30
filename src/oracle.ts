@@ -65,7 +65,7 @@ export class Oracle implements IOracle {
               (res: FinalAuthorizeResponse[]) =>
                 request.combinator === 'or'
                   ? res.some(v => v.result)
-                  : res.every(v => v.result),
+                  : res.every(v => v.result)
             )
             .then<FinalAuthorizeResponse>(f => ({ kind: 'final', result: f }));
         } else {

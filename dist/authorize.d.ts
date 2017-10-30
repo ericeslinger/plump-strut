@@ -1,10 +1,14 @@
 import { ModelData, ModelReference, IndefiniteModelData } from 'plump';
 import { SegmentGenerator } from './dataTypes';
 export interface AbstractAuthorizeRequest {
-    kind: 'attributes' | 'relationship' | 'compound';
+    kind: 'attributes' | 'relationship' | 'compound' | 'other';
+}
+export interface OtherAuthorizeRequest extends AbstractAuthorizeRequest {
+    kind: 'other';
+    action: string;
 }
 export interface AbstractAttributesAuthorizeRequest extends AbstractAuthorizeRequest {
-    action: 'create' | 'read' | 'update' | 'delete' | 'query';
+    action: 'create' | 'read' | 'update' | 'delete';
     actor: ModelReference;
     kind: 'attributes';
 }
@@ -23,8 +27,9 @@ export interface AttributesCreateAuthorizeRequest extends AbstractAttributesAuth
         type: string;
     };
 }
-export interface AttributesQueryAuthorizeRequest extends AbstractAttributesAuthorizeRequest {
+export interface QueryAuthorizeRequest extends OtherAuthorizeRequest {
     action: 'query';
+    actor: ModelReference;
     target: {
         type: string;
     };
@@ -34,7 +39,7 @@ export interface AttributesUpdateAuthorizeRequest extends AbstractAttributesAuth
     target: ModelReference;
     data?: ModelData;
 }
-export declare type AttributesAuthorizeRequest = AttributesCreateAuthorizeRequest | AttributesReadAuthorizeRequest | AttributesUpdateAuthorizeRequest | AttributesDeleteAuthorizeRequest | AttributesQueryAuthorizeRequest;
+export declare type AttributesAuthorizeRequest = AttributesCreateAuthorizeRequest | AttributesReadAuthorizeRequest | AttributesUpdateAuthorizeRequest | AttributesDeleteAuthorizeRequest;
 export interface AbstractRelationshipAuthorizeRequest extends AbstractAuthorizeRequest {
     kind: 'relationship';
     actor: ModelReference;
@@ -60,14 +65,14 @@ export interface RelationshipDeleteAuthorizeRequest extends AbstractRelationship
     child: ModelReference;
 }
 export declare type RelationshipAuthorizeRequest = RelationshipCreateAuthorizeRequest | RelationshipReadAuthorizeRequest | RelationshipUpdateAuthorizeRequest | RelationshipDeleteAuthorizeRequest;
-export declare type SimpleAuthorizeRequest = RelationshipAuthorizeRequest | AttributesAuthorizeRequest;
+export declare type SimpleAuthorizeRequest = RelationshipAuthorizeRequest | QueryAuthorizeRequest | AttributesAuthorizeRequest;
 export interface CompoundAuthorizeRequest extends AbstractAuthorizeRequest {
     kind: 'compound';
     combinator: 'and' | 'or';
-    list: (AttributesAuthorizeRequest | RelationshipAuthorizeRequest | CompoundAuthorizeRequest)[];
+    list: (AttributesAuthorizeRequest | QueryAuthorizeRequest | RelationshipAuthorizeRequest | CompoundAuthorizeRequest)[];
 }
-export declare type ConcreteAuthorizeRequest = RelationshipAuthorizeRequest | AttributesAuthorizeRequest;
-export declare type AuthorizeRequest = RelationshipAuthorizeRequest | AttributesAuthorizeRequest | CompoundAuthorizeRequest;
+export declare type ConcreteAuthorizeRequest = RelationshipAuthorizeRequest | QueryAuthorizeRequest | AttributesAuthorizeRequest;
+export declare type AuthorizeRequest = RelationshipAuthorizeRequest | QueryAuthorizeRequest | AttributesAuthorizeRequest | CompoundAuthorizeRequest;
 export interface AbstractAuthorizeResponse {
     kind: string;
 }

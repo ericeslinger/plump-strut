@@ -59,24 +59,41 @@ export interface StrutConfig {
   authRoot: string;
   routeOptions: Partial<RouteOptions>;
   socketHandlers: SocketDispatch[];
-  routeGenerators: {
-    [type: string]: SegmentGenerator[];
+  controllers: {
+    [type: string]: RouteController;
   };
-  defaultRouteGenerator?: SegmentGenerator[];
+  defaultController?: RouteController;
 }
+export type CRUD = 'create' | 'read' | 'update' | 'delete';
+// export type CRUDQ = 'create' | 'read' | 'update' | 'delete' | 'query';
 
 export interface AttributeRouteSelector extends BasicRouteSelector {
   kind: 'attributes';
-  action: 'create' | 'read' | 'update' | 'delete' | 'query';
+  action: CRUD;
 }
 
 export interface RelationshipRouteSelector extends BasicRouteSelector {
   kind: 'relationship';
-  action: 'create' | 'read' | 'update' | 'delete';
+  action: CRUD;
   relationship: string;
 }
 
-export type RouteSelector = AttributeRouteSelector | RelationshipRouteSelector;
+export interface OtherRouteSelector extends BasicRouteSelector {
+  kind: 'other';
+  action: string;
+}
+
+export interface RouteController {
+  generators: SegmentGenerator[];
+  attributes: CRUD[];
+  relationships: CRUD[];
+  other: string[];
+}
+
+export type RouteSelector =
+  | AttributeRouteSelector
+  | OtherRouteSelector
+  | RelationshipRouteSelector;
 export type RouteOptions = BasicRouteOptions & RouteSelector;
 
 export interface Transformer {
@@ -130,7 +147,7 @@ export interface AuthenticationStrategy {
 export interface TokenService {
   validate: (
     token: string,
-    callback: (err: Error | null, credentials: any) => void,
+    callback: (err: Error | null, credentials: any) => void
   ) => void;
   tokenToUser: (token: string) => Promise<ModelData>;
   userToToken: (user: ModelData) => Promise<string>;
