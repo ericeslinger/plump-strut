@@ -10,6 +10,15 @@ export interface RoutedItem extends Hapi.Request {
         };
     };
 }
+export interface HandledItem extends RoutedItem {
+    pre: {
+        item: {
+            ref: Model<ModelData>;
+            data: ModelData;
+        };
+        handle: ModelData;
+    };
+}
 export interface StrutServer {
     config: StrutConfig;
     services: StrutServices;
@@ -65,9 +74,9 @@ export interface OtherRouteSelector extends BasicRouteSelector {
 }
 export interface RouteController {
     generators: SegmentGenerator[];
-    attributes?: CRUD[];
-    relationships?: CRUD[];
-    other?: string[];
+    attributes: CRUD[];
+    relationships: CRUD[];
+    other: string[];
 }
 export declare type RouteSelector = AttributeRouteSelector | OtherRouteSelector | RelationshipRouteSelector;
 export declare type RouteOptions = BasicRouteOptions & RouteSelector;

@@ -19,7 +19,7 @@ function compose(
   return (initial: Partial<StrutRouteConfiguration> = {}) =>
     funs
       .map(f => f(o, services))
-      .reduce((acc, v) => v(acc), initial) as StrutRouteConfiguration;
+      .reduce((acc, v) => v(acc) || acc, initial) as StrutRouteConfiguration;
 }
 
 export function plugin(

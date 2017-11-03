@@ -21,6 +21,16 @@ export interface RoutedItem extends Hapi.Request {
   };
 }
 
+export interface HandledItem extends RoutedItem {
+  pre: {
+    item: {
+      ref: Model<ModelData>;
+      data: ModelData;
+    };
+    handle: ModelData;
+  };
+}
+
 export interface StrutServer {
   config: StrutConfig;
   services: StrutServices;

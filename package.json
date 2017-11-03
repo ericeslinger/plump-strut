@@ -48,9 +48,9 @@
     "@types/pg": "^7.1.2",
     "bell": "^8.0.0",
     "boom": "^5.0.0",
-    "hapi": "^16.0.0",
+    "hapi": "16.6.2",
     "hapi-auth-bearer-token": "^5.0.0",
-    "joi": "^11.0.0",
+    "joi": "10.6.0",
     "merge-options": "1.0.0",
     "socket.io": "^2.0.0"
   }
