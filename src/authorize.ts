@@ -19,12 +19,17 @@ import {
 import { Oracle } from './oracle';
 
 export interface AbstractAuthorizeRequest {
-  kind: 'attributes' | 'relationship' | 'compound';
+  kind: 'attributes' | 'relationship' | 'compound' | 'other';
+}
+
+export interface OtherAuthorizeRequest extends AbstractAuthorizeRequest {
+  kind: 'other';
+  action: string;
 }
 
 export interface AbstractAttributesAuthorizeRequest
   extends AbstractAuthorizeRequest {
-  action: 'create' | 'read' | 'update' | 'delete' | 'query';
+  action: 'create' | 'read' | 'update' | 'delete';
   actor: ModelReference;
   kind: 'attributes';
 }
@@ -50,9 +55,9 @@ export interface AttributesCreateAuthorizeRequest
   };
 }
 
-export interface AttributesQueryAuthorizeRequest
-  extends AbstractAttributesAuthorizeRequest {
+export interface QueryAuthorizeRequest extends OtherAuthorizeRequest {
   action: 'query';
+  actor: ModelReference;
   target: {
     type: string;
   };
@@ -69,8 +74,7 @@ export type AttributesAuthorizeRequest =
   | AttributesCreateAuthorizeRequest
   | AttributesReadAuthorizeRequest
   | AttributesUpdateAuthorizeRequest
-  | AttributesDeleteAuthorizeRequest
-  | AttributesQueryAuthorizeRequest;
+  | AttributesDeleteAuthorizeRequest;
 
 export interface AbstractRelationshipAuthorizeRequest
   extends AbstractAuthorizeRequest {
@@ -114,6 +118,7 @@ export type RelationshipAuthorizeRequest =
 
 export type SimpleAuthorizeRequest =
   | RelationshipAuthorizeRequest
+  | QueryAuthorizeRequest
   | AttributesAuthorizeRequest;
 
 export interface CompoundAuthorizeRequest extends AbstractAuthorizeRequest {
@@ -121,15 +126,18 @@ export interface CompoundAuthorizeRequest extends AbstractAuthorizeRequest {
   combinator: 'and' | 'or';
   list: (
     | AttributesAuthorizeRequest
+    | QueryAuthorizeRequest
     | RelationshipAuthorizeRequest
     | CompoundAuthorizeRequest)[];
 }
 
 export type ConcreteAuthorizeRequest =
   | RelationshipAuthorizeRequest
+  | QueryAuthorizeRequest
   | AttributesAuthorizeRequest;
 export type AuthorizeRequest =
   | RelationshipAuthorizeRequest
+  | QueryAuthorizeRequest
   | AttributesAuthorizeRequest
   | CompoundAuthorizeRequest;
 
@@ -178,7 +186,7 @@ export interface IOracle {
 
 function generateAuthRequest(
   options: RouteOptions,
-  services: StrutServices,
+  services: StrutServices
 ): (r: Hapi.Request) => AuthorizeRequest {
   const getActor: ActorMapFn = services.oracle.authorizers[options.model.type]
     .mapActor
@@ -214,13 +222,6 @@ function generateAuthRequest(
           return {
             data: req.payload,
             target: { type: options.model.type, id: req.params.itemId },
-            kind: options.kind,
-            action: options.action,
-            actor: getActor(req.auth.credentials.user),
-          };
-        case 'query':
-          return {
-            target: { type: options.model.type },
             kind: options.kind,
             action: options.action,
             actor: getActor(req.auth.credentials.user),
@@ -272,13 +273,22 @@ function generateAuthRequest(
             child: { type: childModel.type, id: req.params.childId },
           };
       }
+    } else if (options.kind === 'other') {
+      if (options.action === 'query') {
+        return {
+          target: { type: options.model.type },
+          kind: options.kind,
+          action: options.action,
+          actor: getActor(req.auth.credentials.user),
+        };
+      }
     }
   };
 }
 
 export const authorize: SegmentGenerator = (
   options: RouteOptions,
-  services: StrutServices,
+  services: StrutServices
 ) => {
   return (o: Partial<StrutRouteConfiguration>) => {
     const i = mergeOptions({}, o);

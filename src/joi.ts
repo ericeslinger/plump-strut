@@ -55,7 +55,7 @@ function childIdType(m: typeof Model, relationship: string, p: Plump) {
 
 export const joi: SegmentGenerator = (
   options: RouteOptions,
-  services: StrutServices,
+  services: StrutServices
 ) => {
   const idType =
     options.model.schema.attributes[options.model.schema.idAttribute].type;
@@ -102,8 +102,6 @@ export const joi: SegmentGenerator = (
                 },
               },
             };
-          case 'query':
-            return {};
         }
       } else if (options.kind === 'relationship') {
         switch (options.action) {
@@ -117,7 +115,7 @@ export const joi: SegmentGenerator = (
                   payload: relationshipValidate(
                     options.model,
                     options.relationship,
-                    services.plump,
+                    services.plump
                   ),
                 },
               },
@@ -142,14 +140,14 @@ export const joi: SegmentGenerator = (
                       childIdType(
                         options.model,
                         options.relationship,
-                        services.plump,
+                        services.plump
                       )
                     ](),
                   },
                   payload: relationshipValidate(
                     options.model,
                     options.relationship,
-                    services.plump,
+                    services.plump
                   ),
                 },
               },
@@ -164,13 +162,17 @@ export const joi: SegmentGenerator = (
                       childIdType(
                         options.model,
                         options.relationship,
-                        services.plump,
+                        services.plump
                       )
                     ](),
                   },
                 },
               },
             };
+        }
+      } else if (options.kind === 'other') {
+        if (options.action === 'query') {
+          return {};
         }
       }
     }
