@@ -37,7 +37,8 @@ export interface StrutRouteConfiguration extends Hapi.RouteConfiguration {
 export interface BasicRouteOptions {
     cors: Hapi.CorsConfigurationObject | boolean;
     authentication: string;
-    model: typeof Model;
+    routeName?: string;
+    model?: typeof Model;
 }
 export interface BasicRouteSelector {
     kind: string;
@@ -53,9 +54,10 @@ export interface StrutConfig {
     authRoot: string;
     routeOptions: Partial<RouteOptions>;
     socketHandlers: SocketDispatch[];
-    controllers: {
+    modelControllers: {
         [type: string]: RouteController;
     };
+    extraControllers?: RouteController[];
     defaultController?: RouteController;
 }
 export declare type CRUD = 'create' | 'read' | 'update' | 'delete';
@@ -77,6 +79,7 @@ export interface RouteController {
     attributes: CRUD[];
     relationships: CRUD[];
     other: string[];
+    name?: string;
 }
 export declare type RouteSelector = AttributeRouteSelector | OtherRouteSelector | RelationshipRouteSelector;
 export declare type RouteOptions = BasicRouteOptions & RouteSelector;

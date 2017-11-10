@@ -14,7 +14,7 @@ import {
 function compose(
   o: RouteOptions,
   services: StrutServices,
-  funs: SegmentGenerator[]
+  funs: SegmentGenerator[],
 ) {
   return (initial: Partial<StrutRouteConfiguration> = {}) =>
     funs
@@ -26,29 +26,31 @@ export function plugin(
   ctrl: RouteController,
   // gen: SegmentGenerator[],
   routeOptions: BasicRouteOptions,
-  services: StrutServices
+  services: StrutServices,
 ) {
   function p(server: Hapi.Server, _, next) {
     const routes: Hapi.RouteConfiguration[] = [];
-    ctrl.attributes.forEach(action => {
-      const o = Object.assign({}, routeOptions, {
-        kind: 'attributes',
-        action: action,
-      }) as RouteOptions;
-      routes.push(compose(o, services, ctrl.generators)());
-    });
-    Object.keys(
-      routeOptions.model.schema.relationships
-    ).forEach(relationship => {
-      ctrl.relationships.forEach(action => {
+    if (routeOptions.model) {
+      ctrl.attributes.forEach(action => {
         const o = Object.assign({}, routeOptions, {
-          kind: 'relationship',
+          kind: 'attributes',
           action: action,
-          relationship: relationship,
         }) as RouteOptions;
         routes.push(compose(o, services, ctrl.generators)());
       });
-    });
+      Object.keys(
+        routeOptions.model.schema.relationships,
+      ).forEach(relationship => {
+        ctrl.relationships.forEach(action => {
+          const o = Object.assign({}, routeOptions, {
+            kind: 'relationship',
+            action: action,
+            relationship: relationship,
+          }) as RouteOptions;
+          routes.push(compose(o, services, ctrl.generators)());
+        });
+      });
+    }
     ctrl.other.forEach(action => {
       const o = Object.assign({}, routeOptions, {
         kind: 'other',
@@ -63,8 +65,8 @@ export function plugin(
     {},
     {
       version: '1.0.0',
-      name: routeOptions.model.type,
-    }
+      name: routeOptions.routeName || routeOptions.model.type,
+    },
   );
   return p;
 }
