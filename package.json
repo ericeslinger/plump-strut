@@ -1,8 +1,7 @@
 {
   "name": "plump-strut",
   "version": "0.22.0",
-  "description":
-    "Adapter for creating CRUD route handlers for plump object in hapi.js",
+  "description": "Adapter for creating CRUD route handlers for plump object in hapi.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -12,7 +11,11 @@
     "type": "git",
     "url": "git+https://github.com/kstf/plump-strut.git"
   },
-  "keywords": ["plump", "javascript", "hapi"],
+  "keywords": [
+    "plump",
+    "javascript",
+    "hapi"
+  ],
   "author": "Eric Eslinger",
   "license": "MIT",
   "bugs": {
