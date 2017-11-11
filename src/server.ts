@@ -48,7 +48,7 @@ export class Strut implements StrutServer {
   constructor(
     plump: Plump,
     conf: Partial<StrutConfig>,
-    public services: StrutServices = {}
+    public services: StrutServices = {},
   ) {
     this.services.hapi = new Hapi.Server();
     this.services.plump = plump;
@@ -62,7 +62,7 @@ export class Strut implements StrutServer {
           this.services.hapi.auth.strategy('token', 'bearer-access-token', {
             validateFunc: (token, callback) =>
               this.services.tokenStore.validate(token, callback),
-          })
+          }),
         );
       }
     });
@@ -103,11 +103,11 @@ export class Strut implements StrutServer {
                   authentication: 'token',
                   model: t,
                 },
-                this.services
+                this.services,
               ),
-              { routes: { prefix: `${this.config.apiRoot}/${t.type}` } }
+              { routes: { prefix: `${this.config.apiRoot}/${t.type}` } },
             );
-          })
+          }),
         );
       })
       .then(() => {
@@ -118,11 +118,11 @@ export class Strut implements StrutServer {
                 plugin(
                   ctrl,
                   { cors: true, authentication: 'token', routeName: ctrl.name },
-                  this.services
+                  this.services,
                 ),
-                { routes: { prefix: `${this.config.apiRoot}/${ctrl.name}` } }
-              )
-            )
+                { routes: { prefix: `${this.config.apiRoot}/${ctrl.name}` } },
+              ),
+            ),
           );
         } else {
           return;
@@ -133,8 +133,8 @@ export class Strut implements StrutServer {
           configureAuth(this) as Hapi.PluginFunction<{}>,
           {
             routes: { prefix: this.config.authRoot },
-          }
-        )
+          },
+        ),
       )
       .then(() => {
         this.services.hapi.ext('onPreAuth', (request, reply) => {
@@ -158,7 +158,7 @@ export class Strut implements StrutServer {
     }
   }
 
-  start() {
+  start(): Promise<any> {
     return this.services.hapi.start();
   }
 }

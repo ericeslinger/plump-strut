@@ -9,5 +9,5 @@ export declare class Strut implements StrutServer {
     preInit(): Promise<void>;
     initialize(): any;
     baseUrl(): string;
-    start(): Promise<Error>;
+    start(): Promise<any>;
 }
