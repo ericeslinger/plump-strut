@@ -50,7 +50,7 @@ export interface StrutConfig {
     apiProtocol: 'http' | 'https';
     authTypes: AuthenticationStrategy[];
     apiPort: number;
-    hostName: string;
+    apiHostname: string;
     authRoot: string;
     routeOptions: Partial<RouteOptions>;
     socketHandlers: SocketDispatch[];
