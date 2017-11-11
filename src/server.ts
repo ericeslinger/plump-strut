@@ -28,7 +28,7 @@ const defaultSettings: StrutConfig = {
   authTypes: [],
   apiPort: 3000,
   authRoot: '/auth',
-  hostName: 'localhost',
+  apiHostname: 'localhost',
   apiProtocol: 'https',
   routeOptions: {},
   defaultController: {
@@ -150,11 +150,11 @@ export class Strut implements StrutServer {
 
   baseUrl() {
     if (this.config.apiPort) {
-      return `${this.config.apiProtocol}://${this.config.hostName}:${this.config
-        .apiPort}`;
+      return `${this.config.apiProtocol}://${this.config.apiHostname}:${this
+        .config.apiPort}`;
     } else {
-      return `${this.config.apiProtocol}://${this.config.hostName}:${this.config
-        .apiPort}`;
+      return `${this.config.apiProtocol}://${this.config.apiHostname}:${this
+        .config.apiPort}`;
     }
   }
 

@@ -69,7 +69,8 @@ function start(
         return {
           name: v.name,
           iconUrl: v.iconUrl,
-          url: `${server.baseUrl()}${server.config
+          url: `${server.config.apiProtocol}://${server.config
+            .apiHostname}${server.config
             .authRoot}?method=${v.name}&nonce=${msg.nonce}`,
         };
       }),
