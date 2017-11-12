@@ -149,12 +149,13 @@ export class Strut implements StrutServer {
   }
 
   baseUrl() {
-    if (this.config.apiPort) {
+    if (this.config.externalHost) {
+      return this.config.externalHost;
+    } else if (this.config.apiPort) {
       return `${this.config.apiProtocol}://${this.config.apiHostname}:${this
         .config.apiPort}`;
     } else {
-      return `${this.config.apiProtocol}://${this.config.apiHostname}:${this
-        .config.apiPort}`;
+      return `${this.config.apiProtocol}://${this.config.apiHostname}`;
     }
   }
 

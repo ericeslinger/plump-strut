@@ -75,6 +75,7 @@ export interface StrutConfig {
   };
   extraControllers?: RouteController[];
   defaultController?: RouteController;
+  externalHost?: string; // this is the URL we appear as - if we are behind a proxy
 }
 export type CRUD = 'create' | 'read' | 'update' | 'delete';
 // export type CRUDQ = 'create' | 'read' | 'update' | 'delete' | 'query';
