@@ -59,6 +59,7 @@ export interface StrutConfig {
     };
     extraControllers?: RouteController[];
     defaultController?: RouteController;
+    externalHost?: string;
 }
 export declare type CRUD = 'create' | 'read' | 'update' | 'delete';
 export interface AttributeRouteSelector extends BasicRouteSelector {
