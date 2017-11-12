@@ -29,7 +29,7 @@ const defaultSettings: StrutConfig = {
   apiPort: 3000,
   authRoot: '/auth',
   apiHostname: 'localhost',
-  apiProtocol: 'https',
+  apiProtocol: 'http',
   routeOptions: {},
   defaultController: {
     generators: [base, joi, authorize, handle],
