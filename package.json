@@ -1,6 +1,6 @@
 {
   "name": "plump-strut",
-  "version": "0.22.3",
+  "version": "0.22.4",
   "description": "Adapter for creating CRUD route handlers for plump object in hapi.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -38,7 +38,7 @@
     "gulp-sourcemaps": "^2.6.1",
     "gulp-typescript": "^3.2.2",
     "mocha": "^3.5.3",
-    "plump": "0.20.1",
+    "plump": "0.20.2",
     "ts-node": "^3.3.0",
     "tslint": "^5.7.0",
     "tslint-eslint-rules": "^4.1.1",
