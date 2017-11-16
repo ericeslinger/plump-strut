@@ -2,7 +2,7 @@
 /* eslint no-shadow: 0 */
 
 import { Plump, MemoryStore } from 'plump';
-import { Strut } from '../src/index';
+import { Strut } from '../dist/index';
 import { TestType } from './testType';
 
 import * as chai from 'chai';

@@ -27,7 +27,6 @@ function loadHandler(model, plump) {
                     type: model.type,
                     id: request.params.itemId
                 });
-                debugger;
                 return item.get({ fields: toLoad, view: request.query.view || 'default' }).then(function (thing) {
                     if (thing) {
                         reply({

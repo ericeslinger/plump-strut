@@ -1,6 +1,6 @@
 import { Plump, MemoryStore } from 'plump';
 import { TestType } from './testType';
-import { Strut } from '../src/index';
+import { Strut } from '../dist/index';
 
 import * as chai from 'chai';
 import * as Hapi from 'hapi';
