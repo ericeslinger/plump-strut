@@ -13,7 +13,7 @@ var Hapi = _interopRequireWildcard(_hapi);
 
 var _socket = require('socket.io');
 
-var SocketIO = _interopRequireWildcard(_socket);
+var _socket2 = _interopRequireDefault(_socket);
 
 var _bell = require('bell');
 
@@ -25,7 +25,7 @@ var bearer = _interopRequireWildcard(_hapiAuthBearerToken);
 
 var _mergeOptions = require('merge-options');
 
-var mergeOptions = _interopRequireWildcard(_mergeOptions);
+var _mergeOptions2 = _interopRequireDefault(_mergeOptions);
 
 var _authentication = require('./authentication');
 
@@ -42,6 +42,8 @@ var _authentication2 = require('./socket/authentication.channel');
 var _handle = require('./handle');
 
 var _plugin = require('./plugin');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -75,7 +77,7 @@ var Strut = exports.Strut = function () {
         this.extensions = {};
         this.services.hapi = new Hapi.Server();
         this.services.plump = plump;
-        this.config = mergeOptions({}, defaultSettings, conf);
+        this.config = (0, _mergeOptions2.default)({}, defaultSettings, conf);
     }
 
     _createClass(Strut, [{
@@ -148,7 +150,7 @@ var Strut = exports.Strut = function () {
                     return reply.continue();
                 });
             }).then(function () {
-                _this3.services.io = SocketIO(_this3.services.hapi.listener);
+                _this3.services.io = (0, _socket2.default)(_this3.services.hapi.listener);
                 _this3.config.socketHandlers.forEach(function (h) {
                     return (0, _dispatch.dispatch)(h, _this3);
                 });

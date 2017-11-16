@@ -9,7 +9,7 @@ import {
 import { Model, Plump, ModelData } from 'plump';
 import * as Hapi from 'hapi';
 import * as Boom from 'boom';
-import * as mergeOptions from 'merge-options';
+import mergeOptions from 'merge-options';
 
 function loadHandler(
   model: typeof Model,
@@ -80,7 +80,7 @@ export const handle: SegmentGenerator = (
               handler: handler,
               config: {
                 pre: i.config.pre.concat(
-                  loadHandler(options.model, services.plump),
+                  loadHandler(options.model, services.plump, ['attributes']),
                   {
                     method: (request: RoutedItem, reply: Hapi.Base_Reply) => {
                       if (

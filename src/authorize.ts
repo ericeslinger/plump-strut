@@ -6,7 +6,7 @@ import {
   IndefiniteModelData,
 } from 'plump';
 import * as Hapi from 'hapi';
-import * as mergeOptions from 'merge-options';
+import mergeOptions from 'merge-options';
 import * as Joi from 'joi';
 import * as Boom from 'boom';
 import {

@@ -5,7 +5,7 @@ import {
   StrutServices,
 } from './dataTypes';
 import * as Hapi from 'hapi';
-import * as mergeOptions from 'merge-options';
+import mergeOptions from 'merge-options';
 
 export const base: SegmentGenerator = (
   options: RouteOptions,

@@ -11,15 +11,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kstf/plump-strut.git"
+    "url": "git+https://github.com/plumpstack/plump-strut.git"
   },
   "keywords": ["plump", "javascript", "hapi"],
   "author": "Eric Eslinger",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kstf/plump-strut/issues"
+    "url": "https://github.com/plumpstack/plump-strut/issues"
   },
-  "homepage": "https://github.com/kstf/plump-strut#readme",
+  "homepage": "https://github.com/plumpstack/plump-strut#readme",
   "devDependencies": {
     "@types/boom": "4.3.7",
     "@types/chai": "^4.0.4",

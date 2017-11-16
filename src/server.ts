@@ -1,8 +1,8 @@
 import * as Hapi from 'hapi';
-import * as SocketIO from 'socket.io';
+import SocketIO from 'socket.io';
 import * as Bell from 'bell';
 import * as bearer from 'hapi-auth-bearer-token';
-import * as mergeOptions from 'merge-options';
+import mergeOptions from 'merge-options';
 import { Plump, Model, TerminalStore } from 'plump';
 import {
   TokenService,
@@ -91,23 +91,24 @@ export class Strut implements StrutServer {
       .then(() => this.preRoute())
       .then(() => {
         return Promise.all(
-          (this.config.models || this.services.plump.getTypes()
-          ).map((t: typeof Model) => {
-            // debugger;
-            return this.services.hapi.register(
-              plugin(
-                this.config.modelControllers[t.type] ||
-                  this.config.defaultController,
-                {
-                  cors: true,
-                  authentication: 'token',
-                  model: t,
-                },
-                this.services,
-              ),
-              { routes: { prefix: `${this.config.apiRoot}/${t.type}` } },
-            );
-          }),
+          (this.config.models || this.services.plump.getTypes()).map(
+            (t: typeof Model) => {
+              // debugger;
+              return this.services.hapi.register(
+                plugin(
+                  this.config.modelControllers[t.type] ||
+                    this.config.defaultController,
+                  {
+                    cors: true,
+                    authentication: 'token',
+                    model: t,
+                  },
+                  this.services,
+                ),
+                { routes: { prefix: `${this.config.apiRoot}/${t.type}` } },
+              );
+            },
+          ),
         );
       })
       .then(() => {
@@ -152,8 +153,9 @@ export class Strut implements StrutServer {
     if (this.config.externalHost) {
       return this.config.externalHost;
     } else if (this.config.apiPort) {
-      return `${this.config.apiProtocol}://${this.config.apiHostname}:${this
-        .config.apiPort}`;
+      return `${this.config.apiProtocol}://${this.config.apiHostname}:${
+        this.config.apiPort
+      }`;
     } else {
       return `${this.config.apiProtocol}://${this.config.apiHostname}`;
     }

@@ -7,13 +7,15 @@ exports.joi = undefined;
 
 var _mergeOptions = require('merge-options');
 
-var mergeOptions = _interopRequireWildcard(_mergeOptions);
+var _mergeOptions2 = _interopRequireDefault(_mergeOptions);
 
 var _joi = require('joi');
 
 var Joi = _interopRequireWildcard(_joi);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function attributeValidator(m) {
     var retVal = {
@@ -152,6 +154,6 @@ var joi = exports.joi = function joi(options, services) {
                 }
             }
         }
-        return mergeOptions({}, i, joiBlock());
+        return (0, _mergeOptions2.default)({}, i, joiBlock());
     };
 };

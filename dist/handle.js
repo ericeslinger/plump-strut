@@ -11,7 +11,9 @@ var Boom = _interopRequireWildcard(_boom);
 
 var _mergeOptions = require('merge-options');
 
-var mergeOptions = _interopRequireWildcard(_mergeOptions);
+var _mergeOptions2 = _interopRequireDefault(_mergeOptions);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -25,6 +27,7 @@ function loadHandler(model, plump) {
                     type: model.type,
                     id: request.params.itemId
                 });
+                debugger;
                 return item.get({ fields: toLoad, view: request.query.view || 'default' }).then(function (thing) {
                     if (thing) {
                         reply({
@@ -72,7 +75,7 @@ var handle = exports.handle = function handle(options, services) {
                         return {
                             handler: handler,
                             config: {
-                                pre: i.config.pre.concat(loadHandler(options.model, services.plump), {
+                                pre: i.config.pre.concat(loadHandler(options.model, services.plump, ['attributes']), {
                                     method: function method(request, reply) {
                                         if (services.oracle && services.oracle.filters[options.model.type]) {
                                             return reply(services.oracle.filter(request.pre.item.data));
@@ -186,6 +189,6 @@ var handle = exports.handle = function handle(options, services) {
                 }
             }
         }
-        return mergeOptions({}, i, handleBlock());
+        return (0, _mergeOptions2.default)({}, i, handleBlock());
     };
 };

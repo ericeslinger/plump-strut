@@ -7,13 +7,15 @@ exports.authorize = undefined;
 
 var _mergeOptions = require('merge-options');
 
-var mergeOptions = _interopRequireWildcard(_mergeOptions);
+var _mergeOptions2 = _interopRequireDefault(_mergeOptions);
 
 var _boom = require('boom');
 
 var Boom = _interopRequireWildcard(_boom);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function generateAuthRequest(options, services) {
     var getActor = services.oracle.authorizers[options.model.type].mapActor ? services.oracle.authorizers[options.model.type].mapActor : function (v) {
@@ -109,7 +111,7 @@ function generateAuthRequest(options, services) {
 }
 var authorize = exports.authorize = function authorize(options, services) {
     return function (o) {
-        var i = mergeOptions({}, o);
+        var i = (0, _mergeOptions2.default)({}, o);
         if (services.oracle && services.oracle.authorizers[options.model.type]) {
             if (i.config.pre === undefined) {
                 i.config.pre = [];
