@@ -73,7 +73,7 @@ describe('Base Plump Routes', () => {
         context.strut.services.hapi.inject(`/api/${TestType.type}/${one.id}`),
       )
       .then(response => {
-        return one.get().then(v => {
+        return one.get({ fields: ['attributes'] }).then(v => {
           const resp = JSON.parse(response.payload);
           expect(resp.attributes.name).to.equal('potato');
           return expect(resp.id).to.equal(v.id);
@@ -92,7 +92,7 @@ describe('Base Plump Routes', () => {
           payload: JSON.stringify({ attributes: { name: 'grotato' } }),
         });
       })
-      .then(() => one.get())
+      .then(() => one.get({ fields: ['attributes'] }))
       .then(v =>
         expect(v).to.have.nested.property('attributes.name', 'grotato'),
       );
@@ -112,7 +112,7 @@ describe('Base Plump Routes', () => {
       .then(response => {
         id = one.id;
         return one
-          .get()
+          .get({ fields: ['attributes'] })
           .then(v => expect(v).to.deep.equal(JSON.parse(response.payload)));
       })
       .then(() => {

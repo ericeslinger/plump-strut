@@ -84,6 +84,9 @@ export const joi: SegmentGenerator = (
                   params: {
                     itemId: Joi[idType](),
                   },
+                  query: {
+                    view: Joi.string(),
+                  },
                 },
               },
             };
