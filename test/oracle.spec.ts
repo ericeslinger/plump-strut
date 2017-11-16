@@ -12,7 +12,7 @@ import {
 } from '../src/authorize';
 
 import { TestType } from './testType';
-import { Oracle } from '../src/oracle';
+import { Oracle } from '../dist/oracle';
 import { ModelData } from 'plump';
 
 const expect = chai.expect;

@@ -1,3 +1,4 @@
+/// <reference types="socket.io" />
 import { Plump, TerminalStore } from 'plump';
 import { Client } from 'pg';
 export declare class PostgresWatcher<T extends TerminalStore> {

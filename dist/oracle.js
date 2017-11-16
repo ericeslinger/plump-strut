@@ -1,17 +1,24 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-function filter(input, f) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _filter(input, f) {
     var rV = {
         id: input.id,
         type: input.type,
         relationships: {},
-        attributes: {},
+        attributes: {}
     };
     ['attributes', 'relationships'].forEach(function (thing) {
         if (input[thing]) {
             Object.keys(input[thing]).forEach(function (a) {
-                if ((f.type === 'white' && f[thing] && f[thing].indexOf(a) >= 0) ||
-                    (f.type === 'black' && (!f[thing] || !(f[thing].indexOf(a) >= 0)))) {
+                if (f.type === 'white' && f[thing] && f[thing].indexOf(a) >= 0 || f.type === 'black' && (!f[thing] || !(f[thing].indexOf(a) >= 0))) {
                     rV[thing][a] = input[thing][a];
                 }
             });
@@ -19,57 +26,72 @@ function filter(input, f) {
     });
     return rV;
 }
-var Oracle = (function () {
+
+var Oracle = exports.Oracle = function () {
     function Oracle(keyService) {
+        _classCallCheck(this, Oracle);
+
         this.keyService = keyService;
         this.authorizers = {};
         this.filters = {};
     }
-    Oracle.prototype.addAuthorizer = function (auth, forType) {
-        this.authorizers[forType] = auth;
-    };
-    Oracle.prototype.filter = function (md) {
-        if (this.filters[md.type]) {
-            return filter(md, this.filters[md.type]);
-        }
-        else {
-            return md;
-        }
-    };
-    Oracle.prototype.addFilter = function (f, forType) {
-        this.filters[forType] = f;
-    };
-    Oracle.prototype.dispatch = function (request) {
-        var _this = this;
-        return Promise.resolve()
-            .then(function () {
-            if (request.kind === 'compound') {
-                return Promise.all(request.list.map(function (v) { return _this.dispatch(v); }))
-                    .then(function (res) {
-                    return request.combinator === 'or'
-                        ? res.some(function (v) { return v.result; })
-                        : res.every(function (v) { return v.result; });
-                })
-                    .then(function (f) { return ({ kind: 'final', result: f }); });
-            }
-            else {
-                return _this.authorizers[request.target.type].authorize(request);
-            }
-        })
-            .then(function (v) {
-            if (v.kind === 'final') {
-                return v;
-            }
-            else if (v.kind === 'delegated') {
-                return _this.dispatch(v.delegate);
-            }
-        });
-    };
-    Oracle.prototype.authorize = function (request) {
-        return this.dispatch(request).then(function (f) { return f.result; });
-    };
-    return Oracle;
-}());
-exports.Oracle = Oracle;
 
-//# sourceMappingURL=data:application/json;charset=utf8;base64,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LENBQUMsTUFBTSxFQUFSLENBQVEsQ0FBQyxDQUFDO0lBQzlFLENBQUM7SUFDSCxhQUFDO0FBQUQsQ0FsREEsQUFrREMsSUFBQTtBQWxEWSx3QkFBTSIsImZpbGUiOiJvcmFjbGUuanMiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBLZXlTZXJ2aWNlLCBSb3V0ZU9wdGlvbnMgfSBmcm9tICcuL2RhdGFUeXBlcyc7XG5cbmltcG9ydCB7XG4gIEF1dGhvcml6ZXJEZWZpbml0aW9uLFxuICBBdXRob3JpemVSZXF1ZXN0LFxuICBBdXRob3JpemVSZXNwb25zZSxcbiAgRmluYWxBdXRob3JpemVSZXNwb25zZSxcbiAgSU9yYWNsZSxcbiAgRmlsdGVyRGVmaW5pdGlvbixcbn0gZnJvbSAnLi9hdXRob3JpemUnO1xuaW1wb3J0IHsgTW9kZWxEYXRhIH0gZnJvbSAncGx1bXAnO1xuXG5pbXBvcnQgeyBSZXF1ZXN0IH0gZnJvbSAnaGFwaSc7XG5cbmZ1bmN0aW9uIGZpbHRlcihpbnB1dDogTW9kZWxEYXRhLCBmOiBGaWx0ZXJEZWZpbml0aW9uKTogTW9kZWxEYXRhIHtcbiAgY29uc3QgclYgPSB7XG4gICAgaWQ6IGlucHV0LmlkLFxuICAgIHR5cGU6IGlucHV0LnR5cGUsXG4gICAgcmVsYXRpb25zaGlwczoge30sXG4gICAgYXR0cmlidXRlczoge30sXG4gIH07XG4gIFsnYXR0cmlidXRlcycsICdyZWxhdGlvbnNoaXBzJ10uZm9yRWFjaCh0aGluZyA9PiB7XG4gICAgaWYgKGlucHV0W3RoaW5nXSkge1xuICAgICAgT2JqZWN0LmtleXMoaW5wdXRbdGhpbmddKS5mb3JFYWNoKGEgPT4ge1xuICAgICAgICBpZiAoXG4gICAgICAgICAgKGYudHlwZSA9PT0gJ3doaXRlJyAmJiBmW3RoaW5nXSAmJiBmW3RoaW5nXS5pbmRleE9mKGEpID49IDApIHx8XG4gICAgICAgICAgKGYudHlwZSA9PT0gJ2JsYWNrJyAmJiAoIWZbdGhpbmddIHx8ICEoZlt0aGluZ10uaW5kZXhPZihhKSA+PSAwKSkpXG4gICAgICAgICkge1xuICAgICAgICAgIHJWW3RoaW5nXVthXSA9IGlucHV0W3RoaW5nXVthXTtcbiAgICAgICAgfVxuICAgICAgfSk7XG4gICAgfVxuICB9KTtcbiAgcmV0dXJuIHJWIGFzIE1vZGVsRGF0YTtcbn1cblxuZXhwb3J0IGNsYXNzIE9yYWNsZSBpbXBsZW1lbnRzIElPcmFjbGUge1xuICBwdWJsaWMgYXV0aG9yaXplcnM6IHsgW25hbWU6IHN0cmluZ106IEF1dGhvcml6ZXJEZWZpbml0aW9uIH0gPSB7fTtcbiAgcHVibGljIGZpbHRlcnM6IHsgW25hbWU6IHN0cmluZ106IEZpbHRlckRlZmluaXRpb24gfSA9IHt9O1xuXG4gIGNvbnN0cnVjdG9yKHB1YmxpYyBrZXlTZXJ2aWNlPzogS2V5U2VydmljZSkge31cblxuICBhZGRBdXRob3JpemVyKGF1dGg6IEF1dGhvcml6ZXJEZWZpbml0aW9uLCBmb3JUeXBlOiBzdHJpbmcpIHtcbiAgICB0aGlzLmF1dGhvcml6ZXJzW2ZvclR5cGVdID0gYXV0aDtcbiAgfVxuXG4gIGZpbHRlcihtZDogTW9kZWxEYXRhKTogTW9kZWxEYXRhIHtcbiAgICBpZiAodGhpcy5maWx0ZXJzW21kLnR5cGVdKSB7XG4gICAgICByZXR1cm4gZmlsdGVyKG1kLCB0aGlzLmZpbHRlcnNbbWQudHlwZV0pO1xuICAgIH0gZWxzZSB7XG4gICAgICByZXR1cm4gbWQ7XG4gICAgfVxuICB9XG5cbiAgYWRkRmlsdGVyKGY6IEZpbHRlckRlZmluaXRpb24sIGZvclR5cGU6IHN0cmluZykge1xuICAgIHRoaXMuZmlsdGVyc1tmb3JUeXBlXSA9IGY7XG4gIH1cblxuICBkaXNwYXRjaChyZXF1ZXN0OiBBdXRob3JpemVSZXF1ZXN0KTogUHJvbWlzZTxGaW5hbEF1dGhvcml6ZVJlc3BvbnNlPiB7XG4gICAgcmV0dXJuIFByb21pc2UucmVzb2x2ZSgpXG4gICAgICAudGhlbjxBdXRob3JpemVSZXNwb25zZT4oKCkgPT4ge1xuICAgICAgICBpZiAocmVxdWVzdC5raW5kID09PSAnY29tcG91bmQnKSB7XG4gICAgICAgICAgcmV0dXJuIFByb21pc2UuYWxsKHJlcXVlc3QubGlzdC5tYXAodiA9PiB0aGlzLmRpc3BhdGNoKHYpKSlcbiAgICAgICAgICAgIC50aGVuKFxuICAgICAgICAgICAgICAocmVzOiBGaW5hbEF1dGhvcml6ZVJlc3BvbnNlW10pID0+XG4gICAgICAgICAgICAgICAgcmVxdWVzdC5jb21iaW5hdG9yID09PSAnb3InXG4gICAgICAgICAgICAgICAgICA/IHJlcy5zb21lKHYgPT4gdi5yZXN1bHQpXG4gICAgICAgICAgICAgICAgICA6IHJlcy5ldmVyeSh2ID0+IHYucmVzdWx0KVxuICAgICAgICAgICAgKVxuICAgICAgICAgICAgLnRoZW48RmluYWxBdXRob3JpemVSZXNwb25zZT4oZiA9PiAoeyBraW5kOiAnZmluYWwnLCByZXN1bHQ6IGYgfSkpO1xuICAgICAgICB9IGVsc2Uge1xuICAgICAgICAgIHJldHVybiB0aGlzLmF1dGhvcml6ZXJzW3JlcXVlc3QudGFyZ2V0LnR5cGVdLmF1dGhvcml6ZShyZXF1ZXN0KTtcbiAgICAgICAgfVxuICAgICAgfSlcbiAgICAgIC50aGVuKHYgPT4ge1xuICAgICAgICBpZiAodi5raW5kID09PSAnZmluYWwnKSB7XG4gICAgICAgICAgcmV0dXJuIHY7XG4gICAgICAgIH0gZWxzZSBpZiAodi5raW5kID09PSAnZGVsZWdhdGVkJykge1xuICAgICAgICAgIHJldHVybiB0aGlzLmRpc3BhdGNoKHYuZGVsZWdhdGUpO1xuICAgICAgICB9XG4gICAgICB9KTtcbiAgfVxuXG4gIGF1dGhvcml6ZShyZXF1ZXN0OiBBdXRob3JpemVSZXF1ZXN0KTogUHJvbWlzZTxib29sZWFuPiB7XG4gICAgcmV0dXJuIHRoaXMuZGlzcGF0Y2gocmVxdWVzdCkudGhlbigoZjogRmluYWxBdXRob3JpemVSZXNwb25zZSkgPT4gZi5yZXN1bHQpO1xuICB9XG59XG4iXX0=
+    _createClass(Oracle, [{
+        key: 'addAuthorizer',
+        value: function addAuthorizer(auth, forType) {
+            this.authorizers[forType] = auth;
+        }
+    }, {
+        key: 'filter',
+        value: function filter(md) {
+            if (this.filters[md.type]) {
+                return _filter(md, this.filters[md.type]);
+            } else {
+                return md;
+            }
+        }
+    }, {
+        key: 'addFilter',
+        value: function addFilter(f, forType) {
+            this.filters[forType] = f;
+        }
+    }, {
+        key: 'dispatch',
+        value: function dispatch(request) {
+            var _this = this;
+
+            return Promise.resolve().then(function () {
+                if (request.kind === 'compound') {
+                    return Promise.all(request.list.map(function (v) {
+                        return _this.dispatch(v);
+                    })).then(function (res) {
+                        return request.combinator === 'or' ? res.some(function (v) {
+                            return v.result;
+                        }) : res.every(function (v) {
+                            return v.result;
+                        });
+                    }).then(function (f) {
+                        return { kind: 'final', result: f };
+                    });
+                } else {
+                    return _this.authorizers[request.target.type].authorize(request);
+                }
+            }).then(function (v) {
+                if (v.kind === 'final') {
+                    return v;
+                } else if (v.kind === 'delegated') {
+                    return _this.dispatch(v.delegate);
+                }
+            });
+        }
+    }, {
+        key: 'authorize',
+        value: function authorize(request) {
+            return this.dispatch(request).then(function (f) {
+                return f.result;
+            });
+        }
+    }]);
+
+    return Oracle;
+}();

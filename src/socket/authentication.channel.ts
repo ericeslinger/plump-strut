@@ -42,8 +42,10 @@ function test(
     .then((response: TestResponse) => {
       if (response.auth === true && server.extensions['loginExtras']) {
         return server.extensions['loginExtras'](response.you).then(r => {
-          return Object.assign(response, { included: r });
+          return Object.assign({}, response, { included: r });
         });
+      } else {
+        return response;
       }
     })
     .then((response: TestResponse) => {
@@ -69,8 +71,9 @@ function start(
         return {
           name: v.name,
           iconUrl: v.iconUrl,
-          url: `${server.baseUrl()}${server.config
-            .authRoot}?method=${v.name}&nonce=${msg.nonce}`,
+          url: `${server.baseUrl()}${server.config.authRoot}?method=${
+            v.name
+          }&nonce=${msg.nonce}`,
         };
       }),
     },
@@ -79,22 +82,22 @@ function start(
 
 export const AuthenticationChannel: SocketDispatch = {
   auth: (msg: AuthenticationRequest, strut: StrutServer) => {
-    return Promise.resolve().then<
-      ResponseEnvelope<AuthenticationResponse>
-    >(() => {
-      if (msg.request === 'startauth') {
-        return start(msg, strut);
-      } else if (msg.request === 'testkey') {
-        return test(msg, strut);
-      } else {
-        return {
-          broadcast: false,
-          key: 'error',
-          msg: {
-            response: 'invalidRequest',
-          },
-        };
-      }
-    });
+    return Promise.resolve().then<ResponseEnvelope<AuthenticationResponse>>(
+      () => {
+        if (msg.request === 'startauth') {
+          return start(msg, strut);
+        } else if (msg.request === 'testkey') {
+          return test(msg, strut);
+        } else {
+          return {
+            broadcast: false,
+            key: 'error',
+            msg: {
+              response: 'invalidRequest',
+            },
+          };
+        }
+      },
+    );
   },
 };

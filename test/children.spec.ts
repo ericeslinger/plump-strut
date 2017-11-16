@@ -2,7 +2,7 @@
 /* eslint no-shadow: 0 */
 
 import { Plump, MemoryStore } from 'plump';
-import { Strut } from '../src/index';
+import { Strut } from '../dist/index';
 import { TestType } from './testType';
 
 import * as chai from 'chai';
@@ -67,7 +67,7 @@ describe('HasMany Plump Routes', () => {
       .then(response => {
         expect(response).to.have.property('statusCode', 200);
         return one
-          .get('relationships.children')
+          .get({ fields: ['relationships.children'] })
           .then(v =>
             expect(v.relationships.children).to.deep.equal([
               { type: TestType.type, id: 100 },
@@ -84,7 +84,7 @@ describe('HasMany Plump Routes', () => {
     return one
       .save()
       .then(() => one.add('children', { id: 100 }).save())
-      .then(() => one.get('relationships.children'))
+      .then(() => one.get({ fields: ['relationships.children'] }))
       .then(v =>
         expect(v.relationships.children).to.deep.equal([
           { type: TestType.type, id: 100 },
@@ -97,7 +97,6 @@ describe('HasMany Plump Routes', () => {
         });
       })
       .then(response => {
-        console.log(response.payload);
         expect(response).to.have.property('statusCode', 200);
         expect(
           JSON.parse(response.payload).relationships.children,
@@ -115,7 +114,7 @@ describe('HasMany Plump Routes', () => {
       .then(() =>
         one.add('valenceChildren', { id: 100, meta: { perm: 2 } }).save(),
       )
-      .then(() => one.get('relationships.valenceChildren'))
+      .then(() => one.get({ fields: ['relationships.valenceChildren'] }))
       .then(v => {
         expect(v.relationships.valenceChildren).to.deep.equal([
           { type: TestType.type, id: 100, meta: { perm: 2 } },
@@ -132,7 +131,7 @@ describe('HasMany Plump Routes', () => {
         expect(response).to.have.property('statusCode', 200);
         return testContext.plump
           .find({ type: 'tests', id: one.id })
-          .get('relationships.valenceChildren');
+          .get({ fields: ['relationships.valenceChildren'] });
       })
       .then(v =>
         expect(v.relationships.valenceChildren).to.deep.equal([
@@ -149,7 +148,7 @@ describe('HasMany Plump Routes', () => {
     return one
       .save()
       .then(() => one.add('children', { id: 100 }).save())
-      .then(() => one.get('relationships.children'))
+      .then(() => one.get({ fields: ['relationships.children'] }))
       .then(v =>
         expect(v.relationships.children).to.deep.equal([
           { type: TestType.type, id: 100 },
@@ -165,7 +164,7 @@ describe('HasMany Plump Routes', () => {
         expect(response).to.have.property('statusCode', 200);
         return testContext.plump
           .find({ type: 'tests', id: one.id })
-          .get('relationships.children');
+          .get({ fields: ['relationships.children'] });
       })
       .then(v => expect(v.relationships.children).to.deep.equal([]));
   });

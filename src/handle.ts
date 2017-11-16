@@ -9,12 +9,12 @@ import {
 import { Model, Plump, ModelData } from 'plump';
 import * as Hapi from 'hapi';
 import * as Boom from 'boom';
-import * as mergeOptions from 'merge-options';
+import mergeOptions from 'merge-options';
 
 function loadHandler(
   model: typeof Model,
   plump: Plump,
-  toLoad: string[] = ['attributes', 'relationships']
+  toLoad: string[] = ['attributes', 'relationships'],
 ) {
   return {
     method: (request: Hapi.Request, reply: Hapi.Base_Reply) => {
@@ -24,7 +24,7 @@ function loadHandler(
           id: request.params.itemId,
         });
         return item
-          .get(toLoad)
+          .get({ fields: toLoad, view: request.query.view || 'default' })
           .then(thing => {
             if (thing) {
               reply({
@@ -53,7 +53,7 @@ function handler(request: Hapi.Request, reply: Hapi.Base_Reply) {
 
 export const handle: SegmentGenerator = (
   options: RouteOptions,
-  services: StrutServices
+  services: StrutServices,
 ) => {
   return (i: Partial<StrutRouteConfiguration>) => {
     function handleBlock(): Partial<StrutRouteConfiguration> {
@@ -66,7 +66,7 @@ export const handle: SegmentGenerator = (
                   method: (request: Hapi.Request, reply: Hapi.Base_Reply) => {
                     const created = new options.model(
                       request.payload,
-                      services.plump
+                      services.plump,
                     );
                     return created.save().then(v => reply(v));
                   },
@@ -80,7 +80,7 @@ export const handle: SegmentGenerator = (
               handler: handler,
               config: {
                 pre: i.config.pre.concat(
-                  loadHandler(options.model, services.plump),
+                  loadHandler(options.model, services.plump, ['attributes']),
                   {
                     method: (request: RoutedItem, reply: Hapi.Base_Reply) => {
                       if (
@@ -88,14 +88,14 @@ export const handle: SegmentGenerator = (
                         services.oracle.filters[options.model.type]
                       ) {
                         return reply(
-                          services.oracle.filter(request.pre.item.data)
+                          services.oracle.filter(request.pre.item.data),
                         );
                       } else {
                         return reply(request.pre.item.data);
                       }
                     },
                     assign: 'handle',
-                  }
+                  },
                 ),
               },
             };
@@ -113,7 +113,7 @@ export const handle: SegmentGenerator = (
                         .then(v => reply(v));
                     },
                     assign: 'handle',
-                  }
+                  },
                 ),
               },
             };
@@ -128,11 +128,11 @@ export const handle: SegmentGenerator = (
                       return request.pre.item.ref.delete().then(v =>
                         reply()
                           .takeover()
-                          .code(200)
+                          .code(200),
                       );
                     },
                     assign: 'handle',
-                  }
+                  },
                 ),
               },
             };
@@ -156,7 +156,7 @@ export const handle: SegmentGenerator = (
                         .then(v => reply(v));
                     },
                     assign: 'handle',
-                  }
+                  },
                 ),
               },
             };
@@ -174,7 +174,7 @@ export const handle: SegmentGenerator = (
                       return reply(request.pre.item.data);
                     },
                     assign: 'handle',
-                  }
+                  },
                 ),
               },
             };
@@ -195,13 +195,13 @@ export const handle: SegmentGenerator = (
                           Object.assign({}, request.payload, {
                             // prevent the user from posting "modify id:2 to the route /item/children/1"
                             id: request.params.childId,
-                          })
+                          }),
                         )
                         .save()
                         .then(v => reply(v));
                     },
                     assign: 'handle',
-                  }
+                  },
                 ),
               },
             };
@@ -225,7 +225,7 @@ export const handle: SegmentGenerator = (
                         .then(v => reply(v));
                     },
                     assign: 'handle',
-                  }
+                  },
                 ),
               },
             };

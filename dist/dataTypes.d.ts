@@ -1,3 +1,4 @@
+/// <reference types="socket.io" />
 import * as Hapi from 'hapi';
 import { Model, ModelData, Plump } from 'plump';
 import { SocketDispatch } from './socket/dataTypes';

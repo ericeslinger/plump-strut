@@ -1,8 +1,19 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var PostgresWatcher = (function () {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var PostgresWatcher = exports.PostgresWatcher = function () {
     function PostgresWatcher(rawDB, plump, io) {
         var _this = this;
+
+        _classCallCheck(this, PostgresWatcher);
+
         this.rawDB = rawDB;
         this.plump = plump;
         this.io = io;
@@ -10,63 +21,62 @@ var PostgresWatcher = (function () {
         Object.keys(this.plump.terminal.types).forEach(function (typeName) {
             Object.keys(_this.plump.terminal.types[typeName].relationships).forEach(function (relName) {
                 var relTable = _this.plump.terminal.types[typeName].relationships[relName].type;
-                if (relTable.storeData &&
-                    relTable.storeData.sql &&
-                    relTable.storeData.sql.tableName &&
-                    !_this.relationshipMap[relTable.storeData.sql.tableName]) {
+                if (relTable.storeData && relTable.storeData.sql && relTable.storeData.sql.tableName && !_this.relationshipMap[relTable.storeData.sql.tableName]) {
                     _this.relationshipMap[relTable.storeData.sql.tableName] = Object.keys(relTable.sides).map(function (sideName) {
                         return {
                             type: relTable.sides[relTable.sides[sideName].otherName].otherType,
-                            field: "relationships." + sideName,
-                            idField: relTable.storeData.sql.joinFields[sideName],
+                            field: 'relationships.' + sideName,
+                            idField: relTable.storeData.sql.joinFields[sideName]
                         };
                     });
                 }
             });
         });
-        this.rawDB.on('notification', function (data) { return _this.handlePGNotification(data); });
+        this.rawDB.on('notification', function (data) {
+            return _this.handlePGNotification(data);
+        });
         this.rawDB.connect();
         this.rawDB.query('listen "update_watchers"');
     }
-    PostgresWatcher.prototype.handlePGNotification = function (data) {
-        var _this = this;
-        var v = JSON.parse(data.payload);
-        if (v.eventType === 'update') {
-            this.io.to('authenticated').emit('plumpUpdate', v);
-        }
-        else if (v.eventType === 'relationshipCreate') {
-            (this.relationshipMap[v.relationship] || []).forEach(function (relMapItem) {
-                _this.io.to('authenticated').emit('plumpUpdate', {
-                    eventType: 'relationshipCreate',
-                    id: v.new[relMapItem.idField],
-                    type: relMapItem.type,
-                    field: relMapItem.field,
-                });
-            });
-        }
-        else if (v.eventType === 'relationshipDelete') {
-            (this.relationshipMap[v.relationship] || []).forEach(function (relMapItem) {
-                _this.io.to('authenticated').emit('plumpUpdate', {
-                    eventType: 'relationshipDelete',
-                    id: v.old[relMapItem.idField],
-                    type: relMapItem.type,
-                    field: relMapItem.field,
-                });
-            });
-        }
-        else if (v.eventType === 'relationshipUpdate') {
-            (this.relationshipMap[v.relationship] || []).forEach(function (relMapItem) {
-                _this.io.to('authenticated').emit('plumpUpdate', {
-                    eventType: 'relationshipUpdate',
-                    id: v.new[relMapItem.idField],
-                    type: relMapItem.type,
-                    field: relMapItem.field,
-                });
-            });
-        }
-    };
-    return PostgresWatcher;
-}());
-exports.PostgresWatcher = PostgresWatcher;
 
-//# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi4uL3NyYy9wb3N0Z3Jlc1dhdGNoZXIudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFJQTtJQUlFLHlCQUNTLEtBQWEsRUFDYixLQUFlLEVBQ2YsRUFBbUI7UUFINUIsaUJBbUNDO1FBbENRLFVBQUssR0FBTCxLQUFLLENBQVE7UUFDYixVQUFLLEdBQUwsS0FBSyxDQUFVO1FBQ2YsT0FBRSxHQUFGLEVBQUUsQ0FBaUI7UUFONUIsb0JBQWUsR0FFWCxFQUFFLENBQUM7UUFNTCxNQUFNLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUMsUUFBUSxDQUFDLEtBQUssQ0FBQyxDQUFDLE9BQU8sQ0FBQyxVQUFBLFFBQVE7WUFDckQsTUFBTSxDQUFDLElBQUksQ0FDVCxLQUFJLENBQUMsS0FBSyxDQUFDLFFBQVEsQ0FBQyxLQUFLLENBQUMsUUFBUSxDQUFDLENBQUMsYUFBYSxDQUNsRCxDQUFDLE9BQU8sQ0FBQyxVQUFBLE9BQU87Z0JBQ2YsSUFBTSxRQUFRLEdBQUcsS0FBSSxDQUFDLEtBQUssQ0FBQyxRQUFRLENBQUMsS0FBSyxDQUFDLFFBQVEsQ0FBQyxDQUFDLGFBQWEsQ0FDaEUsT0FBTyxDQUNSLENBQUMsSUFBSSxDQUFDO2dCQUNQLEVBQUUsQ0FBQyxDQUNELFFBQVEsQ0FBQyxTQUFTO29CQUNsQixRQUFRLENBQUMsU0FBUyxDQUFDLEdBQUc7b0JBQ3RCLFFBQVEsQ0FBQyxTQUFTLENBQUMsR0FBRyxDQUFDLFNBQVM7b0JBQ2hDLENBQUMsS0FBSSxDQUFDLGVBQWUsQ0FBQyxRQUFRLENBQUMsU0FBUyxDQUFDLEdBQUcsQ0FBQyxTQUFTLENBQ3hELENBQUMsQ0FBQyxDQUFDO29CQUNELEtBQUksQ0FBQyxlQUFlLENBQUMsUUFBUSxDQUFDLFNBQVMsQ0FBQyxHQUFHLENBQUMsU0FBUyxDQUFDLEdBQUcsTUFBTSxDQUFDLElBQUksQ0FDbEUsUUFBUSxDQUFDLEtBQUssQ0FDZixDQUFDLEdBQUcsQ0FBQyxVQUFBLFFBQVE7d0JBQ1osTUFB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QyxFQUFFLENBQUMsRUFBRSxDQUFDLGVBQWUsQ0FBQyxDQUFDLElBQUksQ0FBQyxhQUFhLEVBQUU7b0JBQzlDLFNBQVMsRUFBRSxvQkFBb0I7b0JBQy9CLEVBQUUsRUFBRSxDQUFDLENBQUMsR0FBRyxDQUFDLFVBQVUsQ0FBQyxPQUFPLENBQUM7b0JBQzdCLElBQUksRUFBRSxVQUFVLENBQUMsSUFBSTtvQkFDckIsS0FBSyxFQUFFLFVBQVUsQ0FBQyxLQUFLO2lCQUN4QixDQUFDLENBQUM7WUFDTCxDQUFDLENBQUMsQ0FBQztRQUNMLENBQUM7SUFDSCxDQUFDO0lBQ0gsc0JBQUM7QUFBRCxDQXpFQSxBQXlFQyxJQUFBO0FBekVZLDBDQUFlIiwiZmlsZSI6InBvc3RncmVzV2F0Y2hlci5qcyIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IFBsdW1wLCBUZXJtaW5hbFN0b3JlIH0gZnJvbSAncGx1bXAnO1xuaW1wb3J0IHsgQ2xpZW50IH0gZnJvbSAncGcnO1xuaW1wb3J0ICogYXMgU29ja2V0SU8gZnJvbSAnc29ja2V0LmlvJztcblxuZXhwb3J0IGNsYXNzIFBvc3RncmVzV2F0Y2hlcjxUIGV4dGVuZHMgVGVybWluYWxTdG9yZT4ge1xuICByZWxhdGlvbnNoaXBNYXA6IHtcbiAgICBba2V5OiBzdHJpbmddOiB7IHR5cGU6IHN0cmluZzsgZmllbGQ6IHN0cmluZzsgaWRGaWVsZDogc3RyaW5nIH1bXTtcbiAgfSA9IHt9O1xuICBjb25zdHJ1Y3RvcihcbiAgICBwdWJsaWMgcmF3REI6IENsaWVudCxcbiAgICBwdWJsaWMgcGx1bXA6IFBsdW1wPFQ+LFxuICAgIHB1YmxpYyBpbzogU29ja2V0SU8uU2VydmVyXG4gICkge1xuICAgIE9iamVjdC5rZXlzKHRoaXMucGx1bXAudGVybWluYWwudHlwZXMpLmZvckVhY2godHlwZU5hbWUgPT4ge1xuICAgICAgT2JqZWN0LmtleXMoXG4gICAgICAgIHRoaXMucGx1bXAudGVybWluYWwudHlwZXNbdHlwZU5hbWVdLnJlbGF0aW9uc2hpcHNcbiAgICAgICkuZm9yRWFjaChyZWxOYW1lID0+IHtcbiAgICAgICAgY29uc3QgcmVsVGFibGUgPSB0aGlzLnBsdW1wLnRlcm1pbmFsLnR5cGVzW3R5cGVOYW1lXS5yZWxhdGlvbnNoaXBzW1xuICAgICAgICAgIHJlbE5hbWVcbiAgICAgICAgXS50eXBlO1xuICAgICAgICBpZiAoXG4gICAgICAgICAgcmVsVGFibGUuc3RvcmVEYXRhICYmXG4gICAgICAgICAgcmVsVGFibGUuc3RvcmVEYXRhLnNxbCAmJlxuICAgICAgICAgIHJlbFRhYmxlLnN0b3JlRGF0YS5zcWwudGFibGVOYW1lICYmXG4gICAgICAgICAgIXRoaXMucmVsYXRpb25zaGlwTWFwW3JlbFRhYmxlLnN0b3JlRGF0YS5zcWwudGFibGVOYW1lXVxuICAgICAgICApIHtcbiAgICAgICAgICB0aGlzLnJlbGF0aW9uc2hpcE1hcFtyZWxUYWJsZS5zdG9yZURhdGEuc3FsLnRhYmxlTmFtZV0gPSBPYmplY3Qua2V5cyhcbiAgICAgICAgICAgIHJlbFRhYmxlLnNpZGVzXG4gICAgICAgICAgKS5tYXAoc2lkZU5hbWUgPT4ge1xuICAgICAgICAgICAgcmV0dXJuIHtcbiAgICAgICAgICAgICAgdHlwZTpcbiAgICAgICAgICAgICAgICByZWxUYWJsZS5zaWRlc1tyZWxUYWJsZS5zaWRlc1tzaWRlTmFtZV0ub3RoZXJOYW1lXS5vdGhlclR5cGUsIC8vIHNpbGx5IHNpZGUtZWZmZWN0IG9mIG9ubHkga25vd2luZyB0aGUgb3RoZXIgdHlwZVxuICAgICAgICAgICAgICBmaWVsZDogYHJlbGF0aW9uc2hpcHMuJHtzaWRlTmFtZX1gLFxuICAgICAgICAgICAgICBpZEZpZWxkOiByZWxUYWJsZS5zdG9yZURhdGEuc3FsLmpvaW5GaWVsZHNbc2lkZU5hbWVdLFxuICAgICAgICAgICAgfTtcbiAgICAgICAgICB9KTtcbiAgICAgICAgfVxuICAgICAgfSk7XG4gICAgfSk7XG5cbiAgICB0aGlzLnJhd0RCLm9uKCdub3RpZmljYXRpb24nLCBkYXRhID0+IHRoaXMuaGFuZGxlUEdOb3RpZmljYXRpb24oZGF0YSkpO1xuICAgIHRoaXMucmF3REIuY29ubmVjdCgpO1xuICAgIHRoaXMucmF3REIucXVlcnkoJ2xpc3RlbiBcInVwZGF0ZV93YXRjaGVyc1wiJyk7XG4gIH1cbiAgaGFuZGxlUEdOb3RpZmljYXRpb24oZGF0YSkge1xuICAgIGNvbnN0IHYgPSBKU09OLnBhcnNlKGRhdGEucGF5bG9hZCk7XG4gICAgaWYgKHYuZXZlbnRUeXBlID09PSAndXBkYXRlJykge1xuICAgICAgdGhpcy5pby50bygnYXV0aGVudGljYXRlZCcpLmVtaXQoJ3BsdW1wVXBkYXRlJywgdik7XG4gICAgfSBlbHNlIGlmICh2LmV2ZW50VHlwZSA9PT0gJ3JlbGF0aW9uc2hpcENyZWF0ZScpIHtcbiAgICAgICh0aGlzLnJlbGF0aW9uc2hpcE1hcFt2LnJlbGF0aW9uc2hpcF0gfHwgW10pLmZvckVhY2gocmVsTWFwSXRlbSA9PiB7XG4gICAgICAgIHRoaXMuaW8udG8oJ2F1dGhlbnRpY2F0ZWQnKS5lbWl0KCdwbHVtcFVwZGF0ZScsIHtcbiAgICAgICAgICBldmVudFR5cGU6ICdyZWxhdGlvbnNoaXBDcmVhdGUnLFxuICAgICAgICAgIGlkOiB2Lm5ld1tyZWxNYXBJdGVtLmlkRmllbGRdLFxuICAgICAgICAgIHR5cGU6IHJlbE1hcEl0ZW0udHlwZSxcbiAgICAgICAgICBmaWVsZDogcmVsTWFwSXRlbS5maWVsZCxcbiAgICAgICAgfSk7XG4gICAgICB9KTtcbiAgICB9IGVsc2UgaWYgKHYuZXZlbnRUeXBlID09PSAncmVsYXRpb25zaGlwRGVsZXRlJykge1xuICAgICAgKHRoaXMucmVsYXRpb25zaGlwTWFwW3YucmVsYXRpb25zaGlwXSB8fCBbXSkuZm9yRWFjaChyZWxNYXBJdGVtID0+IHtcbiAgICAgICAgdGhpcy5pby50bygnYXV0aGVudGljYXRlZCcpLmVtaXQoJ3BsdW1wVXBkYXRlJywge1xuICAgICAgICAgIGV2ZW50VHlwZTogJ3JlbGF0aW9uc2hpcERlbGV0ZScsXG4gICAgICAgICAgaWQ6IHYub2xkW3JlbE1hcEl0ZW0uaWRGaWVsZF0sXG4gICAgICAgICAgdHlwZTogcmVsTWFwSXRlbS50eXBlLFxuICAgICAgICAgIGZpZWxkOiByZWxNYXBJdGVtLmZpZWxkLFxuICAgICAgICB9KTtcbiAgICAgIH0pO1xuICAgIH0gZWxzZSBpZiAodi5ldmVudFR5cGUgPT09ICdyZWxhdGlvbnNoaXBVcGRhdGUnKSB7XG4gICAgICAodGhpcy5yZWxhdGlvbnNoaXBNYXBbdi5yZWxhdGlvbnNoaXBdIHx8IFtdKS5mb3JFYWNoKHJlbE1hcEl0ZW0gPT4ge1xuICAgICAgICB0aGlzLmlvLnRvKCdhdXRoZW50aWNhdGVkJykuZW1pdCgncGx1bXBVcGRhdGUnLCB7XG4gICAgICAgICAgZXZlbnRUeXBlOiAncmVsYXRpb25zaGlwVXBkYXRlJyxcbiAgICAgICAgICBpZDogdi5uZXdbcmVsTWFwSXRlbS5pZEZpZWxkXSxcbiAgICAgICAgICB0eXBlOiByZWxNYXBJdGVtLnR5cGUsXG4gICAgICAgICAgZmllbGQ6IHJlbE1hcEl0ZW0uZmllbGQsXG4gICAgICAgIH0pO1xuICAgICAgfSk7XG4gICAgfVxuICB9XG59XG4iXX0=
+    _createClass(PostgresWatcher, [{
+        key: 'handlePGNotification',
+        value: function handlePGNotification(data) {
+            var _this2 = this;
+
+            var v = JSON.parse(data.payload);
+            if (v.eventType === 'update') {
+                this.io.to('authenticated').emit('plumpUpdate', v);
+            } else if (v.eventType === 'relationshipCreate') {
+                (this.relationshipMap[v.relationship] || []).forEach(function (relMapItem) {
+                    _this2.io.to('authenticated').emit('plumpUpdate', {
+                        eventType: 'relationshipCreate',
+                        id: v.new[relMapItem.idField],
+                        type: relMapItem.type,
+                        field: relMapItem.field
+                    });
+                });
+            } else if (v.eventType === 'relationshipDelete') {
+                (this.relationshipMap[v.relationship] || []).forEach(function (relMapItem) {
+                    _this2.io.to('authenticated').emit('plumpUpdate', {
+                        eventType: 'relationshipDelete',
+                        id: v.old[relMapItem.idField],
+                        type: relMapItem.type,
+                        field: relMapItem.field
+                    });
+                });
+            } else if (v.eventType === 'relationshipUpdate') {
+                (this.relationshipMap[v.relationship] || []).forEach(function (relMapItem) {
+                    _this2.io.to('authenticated').emit('plumpUpdate', {
+                        eventType: 'relationshipUpdate',
+                        id: v.new[relMapItem.idField],
+                        type: relMapItem.type,
+                        field: relMapItem.field
+                    });
+                });
+            }
+        }
+    }]);
+
+    return PostgresWatcher;
+}();

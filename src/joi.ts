@@ -6,7 +6,7 @@ import {
 } from './dataTypes';
 import { Model, Plump } from 'plump';
 import * as Hapi from 'hapi';
-import * as mergeOptions from 'merge-options';
+import mergeOptions from 'merge-options';
 import * as Joi from 'joi';
 
 function attributeValidator(m: typeof Model) {
@@ -83,6 +83,9 @@ export const joi: SegmentGenerator = (
                 validate: {
                   params: {
                     itemId: Joi[idType](),
+                  },
+                  query: {
+                    view: Joi.string(),
                   },
                 },
               },

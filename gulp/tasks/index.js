@@ -1,3 +1,3 @@
 require('./scripts');
 require('./clean');
-require('./run');
+require('./test');

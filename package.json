@@ -1,15 +1,15 @@
 {
   "name": "plump-strut",
-  "version": "0.22.3",
+  "version": "0.25.1",
   "description": "Adapter for creating CRUD route handlers for plump object in hapi.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "mocha  --require ts-node/register test/*.spec.ts"
+    "test": "gulp maketest && mocha testbuild/*.spec.js && gulp testclean"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kstf/plump-strut.git"
+    "url": "git+https://github.com/plumpstack/plump-strut.git"
   },
   "keywords": [
     "plump",
@@ -19,9 +19,9 @@
   "author": "Eric Eslinger",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kstf/plump-strut/issues"
+    "url": "https://github.com/plumpstack/plump-strut/issues"
   },
-  "homepage": "https://github.com/kstf/plump-strut#readme",
+  "homepage": "https://github.com/plumpstack/plump-strut#readme",
   "devDependencies": {
     "@types/boom": "4.3.7",
     "@types/chai": "^4.0.4",
@@ -31,15 +31,17 @@
     "@types/mocha": "^2.2.43",
     "@types/node": "^8.0.28",
     "@types/socket.io": "^1.4.30",
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "chai": "^4.1.2",
     "del": "^3.0.0",
     "gulp": "github:gulpjs/gulp#4.0",
+    "gulp-babel": "^7.0.0",
     "gulp-mocha": "^4.3.1",
     "gulp-sourcemaps": "^2.6.1",
     "gulp-typescript": "^3.2.2",
     "mocha": "^3.5.3",
-    "plump": "0.20.1",
-    "ts-node": "^3.3.0",
+    "plump": "0.25.1",
     "tslint": "^5.7.0",
     "tslint-eslint-rules": "^4.1.1",
     "typescript": "2.4.2"
