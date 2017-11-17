@@ -1,6 +1,5 @@
 import { Plump, TerminalStore } from 'plump';
 import { Client } from 'pg';
-import * as SocketIO from 'socket.io';
 
 export class PostgresWatcher<T extends TerminalStore> {
   relationshipMap: {
@@ -9,33 +8,43 @@ export class PostgresWatcher<T extends TerminalStore> {
   constructor(
     public rawDB: Client,
     public plump: Plump<T>,
-    public io: SocketIO.Server
+    public io: SocketIO.Server,
   ) {
     Object.keys(this.plump.terminal.types).forEach(typeName => {
-      Object.keys(
-        this.plump.terminal.types[typeName].relationships
-      ).forEach(relName => {
-        const relTable = this.plump.terminal.types[typeName].relationships[
-          relName
-        ].type;
-        if (
-          relTable.storeData &&
-          relTable.storeData.sql &&
-          relTable.storeData.sql.tableName &&
-          !this.relationshipMap[relTable.storeData.sql.tableName]
-        ) {
-          this.relationshipMap[relTable.storeData.sql.tableName] = Object.keys(
-            relTable.sides
-          ).map(sideName => {
-            return {
-              type:
-                relTable.sides[relTable.sides[sideName].otherName].otherType, // silly side-effect of only knowing the other type
-              field: `relationships.${sideName}`,
-              idField: relTable.storeData.sql.joinFields[sideName],
-            };
-          });
-        }
-      });
+      Object.keys(this.plump.terminal.types[typeName].relationships).forEach(
+        relName => {
+          const relTable = this.plump.terminal.types[typeName].relationships[
+            relName
+          ].type;
+          if (relTable.storeData && relTable.storeData.sql) {
+            const interesting = [];
+            if (relTable.storeData.sql.tableName) {
+              interesting.push(relTable.storeData.sql.tableName);
+            }
+            if (relTable.storeData.sql.readView) {
+              interesting.push(relTable.storeData.sql.readView);
+            }
+            if (relTable.storeData.sql.writeView) {
+              interesting.push(relTable.storeData.sql.writeView);
+            }
+            interesting
+              .filter(table => !this.relationshipMap[table])
+              .forEach(table => {
+                this.relationshipMap[table] = Object.keys(relTable.sides).map(
+                  sideName => {
+                    return {
+                      type:
+                        relTable.sides[relTable.sides[sideName].otherName]
+                          .otherType, // silly side-effect of only knowing the other type
+                      field: `relationships.${sideName}`,
+                      idField: relTable.storeData.sql.joinFields[sideName],
+                    };
+                  },
+                );
+              });
+          }
+        },
+      );
     });
 
     this.rawDB.on('notification', data => this.handlePGNotification(data));
