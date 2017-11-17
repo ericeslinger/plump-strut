@@ -1,8 +1,7 @@
 {
   "name": "plump-strut",
   "version": "0.25.2",
-  "description":
-    "Adapter for creating CRUD route handlers for plump object in hapi.js",
+  "description": "Adapter for creating CRUD route handlers for plump object in hapi.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -12,7 +11,11 @@
     "type": "git",
     "url": "git+https://github.com/plumpstack/plump-strut.git"
   },
-  "keywords": ["plump", "javascript", "hapi"],
+  "keywords": [
+    "plump",
+    "javascript",
+    "hapi"
+  ],
   "author": "Eric Eslinger",
   "license": "MIT",
   "bugs": {
@@ -38,7 +41,7 @@
     "gulp-sourcemaps": "^2.6.1",
     "gulp-typescript": "^3.2.2",
     "mocha": "^3.5.3",
-    "plump": "0.25.1",
+    "plump": "0.25.2",
     "tslint": "^5.7.0",
     "tslint-eslint-rules": "^4.1.1",
     "typescript": "2.4.2"
