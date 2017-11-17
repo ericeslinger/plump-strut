@@ -21,13 +21,27 @@ var PostgresWatcher = exports.PostgresWatcher = function () {
         Object.keys(this.plump.terminal.types).forEach(function (typeName) {
             Object.keys(_this.plump.terminal.types[typeName].relationships).forEach(function (relName) {
                 var relTable = _this.plump.terminal.types[typeName].relationships[relName].type;
-                if (relTable.storeData && relTable.storeData.sql && relTable.storeData.sql.tableName && !_this.relationshipMap[relTable.storeData.sql.tableName]) {
-                    _this.relationshipMap[relTable.storeData.sql.tableName] = Object.keys(relTable.sides).map(function (sideName) {
-                        return {
-                            type: relTable.sides[relTable.sides[sideName].otherName].otherType,
-                            field: 'relationships.' + sideName,
-                            idField: relTable.storeData.sql.joinFields[sideName]
-                        };
+                if (relTable.storeData && relTable.storeData.sql) {
+                    var interesting = [];
+                    if (relTable.storeData.sql.tableName) {
+                        interesting.push(relTable.storeData.sql.tableName);
+                    }
+                    if (relTable.storeData.sql.readView) {
+                        interesting.push(relTable.storeData.sql.readView);
+                    }
+                    if (relTable.storeData.sql.writeView) {
+                        interesting.push(relTable.storeData.sql.writeView);
+                    }
+                    interesting.filter(function (table) {
+                        return !_this.relationshipMap[table];
+                    }).forEach(function (table) {
+                        _this.relationshipMap[table] = Object.keys(relTable.sides).map(function (sideName) {
+                            return {
+                                type: relTable.sides[relTable.sides[sideName].otherName].otherType,
+                                field: 'relationships.' + sideName,
+                                idField: relTable.storeData.sql.joinFields[sideName]
+                            };
+                        });
                     });
                 }
             });
