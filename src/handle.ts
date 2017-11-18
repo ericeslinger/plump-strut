@@ -107,6 +107,10 @@ export const handle: SegmentGenerator = (
                   loadHandler(options.model, services.plump),
                   {
                     method: (request: RoutedItem, reply: Hapi.Base_Reply) => {
+                      const p = Object.assign({}, request.payload);
+                      if (p[options.model.schema.idAttribute]) {
+                        delete p[options.model.schema.idAttribute];
+                      }
                       return request.pre.item.ref
                         .set(request.payload)
                         .save()

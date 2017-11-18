@@ -27,6 +27,8 @@ function attributeValidator(m) {
     Object.keys(m.schema.attributes).forEach(function (attr) {
         if (m.schema.attributes[attr].type === 'boolean') {
             retVal.attributes[attr] = Joi.boolean().truthy('true').falsy('false');
+        } else if (m.schema.attributes[attr].type === 'object') {
+            retVal.attributes[attr] = Joi.alternatives().try(Joi.array(), Joi.object());
         } else {
             retVal.attributes[attr] = Joi[m.schema.attributes[attr].type]();
         }
