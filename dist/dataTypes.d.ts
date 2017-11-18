@@ -29,8 +29,8 @@ export interface StrutServer {
     preRoute: () => Promise<void>;
     extensions: any;
 }
-export interface StrutInnerConfig extends Hapi.RouteAdditionalConfigurationOptions {
-    pre: Hapi.RoutePrerequisiteObjects[];
+export interface StrutInnerConfig extends Partial<Hapi.RouteAdditionalConfigurationOptions> {
+    pre?: Hapi.RoutePrerequisiteObjects[];
 }
 export interface StrutRouteConfiguration extends Hapi.RouteConfiguration {
     config: StrutInnerConfig;

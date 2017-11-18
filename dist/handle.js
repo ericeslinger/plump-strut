@@ -92,6 +92,10 @@ var handle = exports.handle = function handle(options, services) {
                             config: {
                                 pre: i.config.pre.concat(loadHandler(options.model, services.plump), {
                                     method: function method(request, reply) {
+                                        var p = Object.assign({}, request.payload);
+                                        if (p[options.model.schema.idAttribute]) {
+                                            delete p[options.model.schema.idAttribute];
+                                        }
                                         return request.pre.item.ref.set(request.payload).save().then(function (v) {
                                             return reply(v);
                                         });

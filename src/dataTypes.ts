@@ -42,8 +42,8 @@ export interface StrutServer {
 }
 
 export interface StrutInnerConfig
-  extends Hapi.RouteAdditionalConfigurationOptions {
-  pre: Hapi.RoutePrerequisiteObjects[];
+  extends Partial<Hapi.RouteAdditionalConfigurationOptions> {
+  pre?: Hapi.RoutePrerequisiteObjects[];
 }
 
 export interface StrutRouteConfiguration extends Hapi.RouteConfiguration {
