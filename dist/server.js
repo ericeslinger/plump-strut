@@ -125,17 +125,27 @@ var Strut = exports.Strut = function () {
                 return _this3.preRoute();
             }).then(function () {
                 return Promise.all((_this3.config.models || _this3.services.plump.getTypes()).map(function (t) {
-                    // debugger;
-                    return _this3.services.hapi.register((0, _plugin.plugin)(_this3.config.modelControllers[t.type] || _this3.config.defaultController, {
+                    var ctrl = _this3.config.modelControllers[t.type] || _this3.config.defaultController;
+                    var baseUrl = ctrl.baseUrl === null || ctrl.baseUrl === undefined ? _this3.config.apiRoot : ctrl.baseUrl;
+                    return _this3.services.hapi.register((0, _plugin.plugin)(ctrl, {
                         cors: true,
                         authentication: 'token',
                         model: t
-                    }, _this3.services), { routes: { prefix: _this3.config.apiRoot + '/' + t.type } });
+                    }, _this3.services), {
+                        routes: {
+                            prefix: baseUrl + '/' + t.type
+                        }
+                    });
                 }));
             }).then(function () {
                 if (_this3.config.extraControllers) {
                     return Promise.all(_this3.config.extraControllers.map(function (ctrl) {
-                        return _this3.services.hapi.register((0, _plugin.plugin)(ctrl, { cors: true, authentication: 'token', routeName: ctrl.name }, _this3.services), { routes: { prefix: _this3.config.apiRoot + '/' + ctrl.name } });
+                        var baseUrl = ctrl.baseUrl === null || ctrl.baseUrl === undefined ? _this3.config.apiRoot : ctrl.baseUrl;
+                        return _this3.services.hapi.register((0, _plugin.plugin)(ctrl, { cors: true, authentication: 'token', routeName: ctrl.name }, _this3.services), {
+                            routes: {
+                                prefix: baseUrl + '/' + ctrl.name
+                            }
+                        });
                     }));
                 } else {
                     return;

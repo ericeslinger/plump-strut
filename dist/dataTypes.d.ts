@@ -80,6 +80,7 @@ export interface RouteController {
     generators: SegmentGenerator[];
     attributes: CRUD[];
     relationships: CRUD[];
+    baseUrl?: string;
     other: string[];
     name?: string;
 }
