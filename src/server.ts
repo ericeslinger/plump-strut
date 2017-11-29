@@ -93,11 +93,17 @@ export class Strut implements StrutServer {
         return Promise.all(
           (this.config.models || this.services.plump.getTypes()).map(
             (t: typeof Model) => {
-              // debugger;
+              const ctrl =
+                this.config.modelControllers[t.type] ||
+                this.config.defaultController;
+
+              const baseUrl =
+                ctrl.baseUrl === null || ctrl.baseUrl === undefined
+                  ? this.config.apiRoot
+                  : ctrl.baseUrl;
               return this.services.hapi.register(
                 plugin(
-                  this.config.modelControllers[t.type] ||
-                    this.config.defaultController,
+                  ctrl,
                   {
                     cors: true,
                     authentication: 'token',
@@ -105,7 +111,11 @@ export class Strut implements StrutServer {
                   },
                   this.services,
                 ),
-                { routes: { prefix: `${this.config.apiRoot}/${t.type}` } },
+                {
+                  routes: {
+                    prefix: `${baseUrl}/${t.type}`,
+                  },
+                },
               );
             },
           ),
@@ -114,16 +124,24 @@ export class Strut implements StrutServer {
       .then(() => {
         if (this.config.extraControllers) {
           return Promise.all(
-            this.config.extraControllers.map(ctrl =>
-              this.services.hapi.register(
+            this.config.extraControllers.map(ctrl => {
+              const baseUrl =
+                ctrl.baseUrl === null || ctrl.baseUrl === undefined
+                  ? this.config.apiRoot
+                  : ctrl.baseUrl;
+              return this.services.hapi.register(
                 plugin(
                   ctrl,
                   { cors: true, authentication: 'token', routeName: ctrl.name },
                   this.services,
                 ),
-                { routes: { prefix: `${this.config.apiRoot}/${ctrl.name}` } },
-              ),
-            ),
+                {
+                  routes: {
+                    prefix: `${baseUrl}/${ctrl.name}`,
+                  },
+                },
+              );
+            }),
           );
         } else {
           return;
